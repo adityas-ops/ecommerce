@@ -5,6 +5,8 @@ import Checkout from '../screens/Checkout';
 import Login from '../screens/Login';
 import TabNav from './TabNav';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useAppSelector } from '../store/store';
+
 export type RootStackParamList = {
   Tabs: undefined;
   productDetail: { id: number };
@@ -15,14 +17,41 @@ export type RootStackParamList = {
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const AppNavigator = () => {
+  const user = useAppSelector(state => state.user);
+  const isAuthenticated = Boolean(
+    user && user.email && user.email.trim().length > 0,
+  );
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <Stack.Navigator>
-        <Stack.Screen
-          name="Tabs"
-          component={TabNav}
-          options={{ headerShown: false }}
-        />
+      <Stack.Navigator initialRouteName={isAuthenticated ? 'Tabs' : 'login'}>
+        {!isAuthenticated ? (
+          <>
+            <Stack.Screen
+              name="login"
+              component={Login}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="Tabs"
+              component={TabNav}
+              options={{ headerShown: false }}
+            />
+          </>
+        ) : (
+          <>
+            <Stack.Screen
+              name="Tabs"
+              component={TabNav}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="login"
+              component={Login}
+              options={{ headerShown: false }}
+            />
+          </>
+        )}
         <Stack.Screen
           name="productDetail"
           component={ProductDetails}
@@ -31,12 +60,7 @@ const AppNavigator = () => {
         <Stack.Screen
           name="checkout"
           component={Checkout}
-          options={{ title: 'Product Details', headerShown: false }}
-        />
-        <Stack.Screen
-          name="login"
-          component={Login}
-          options={{ title: 'Product Details', headerShown: false }}
+          options={{ title: 'Checkout', headerShown: false }}
         />
       </Stack.Navigator>
     </SafeAreaView>

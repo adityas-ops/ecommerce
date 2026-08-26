@@ -40,7 +40,7 @@ const rootReducer = combineReducers({
 const persistConfig = {
   key: 'root',
   storage: mmkvStorage,
-  whitelist: ['cart', 'cartData', 'user'],
+  whitelist: ['cart', 'user'],
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
