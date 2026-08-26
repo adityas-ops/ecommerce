@@ -1,5 +1,7 @@
 import { View, Text } from 'react-native';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { getProducts } from '../../api/productApi';
+import { Product } from '../../types/product';
 
 const Home = () => {
   return (
