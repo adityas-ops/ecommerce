@@ -11,12 +11,24 @@ export interface ProductsResponse {
 export const getProducts = async ({
   limit = 10,
   skip = 0,
+  sortBy,
+  order,
 }: {
   limit?: number;
   skip?: number;
+  sortBy?: string;
+  order?: 'asc' | 'desc';
 }): Promise<ProductsResponse> => {
+  const params: Record<string, any> = { limit, skip };
+  if (sortBy) {
+    params.sortBy = sortBy;
+  }
+  if (order) {
+    params.order = order;
+  }
+
   const response = await axiosInstance.get<ProductsResponse>('/products', {
-    params: { limit, skip },
+    params,
   });
   return response.data;
 };
@@ -30,16 +42,59 @@ export const searchProducts = async ({
   query,
   limit = 10,
   skip = 0,
+  sortBy,
+  order,
 }: {
   query: string;
   limit?: number;
   skip?: number;
+  sortBy?: string;
+  order?: 'asc' | 'desc';
 }): Promise<ProductsResponse> => {
+  const params: Record<string, any> = { q: query, limit, skip };
+  if (sortBy) {
+    params.sortBy = sortBy;
+  }
+  if (order) {
+    params.order = order;
+  }
+
   const response = await axiosInstance.get<ProductsResponse>(
     '/products/search',
-    {
-      params: { q: query, limit, skip },
-    },
+    { params },
+  );
+  return response.data;
+};
+
+export const getCategoriesList = async (): Promise<string[]> => {
+  const response = await axiosInstance.get<string[]>('/products/category-list');
+  return response.data;
+};
+
+export const getProductsByCategory = async ({
+  category,
+  limit = 10,
+  skip = 0,
+  sortBy,
+  order,
+}: {
+  category: string;
+  limit?: number;
+  skip?: number;
+  sortBy?: string;
+  order?: 'asc' | 'desc';
+}): Promise<ProductsResponse> => {
+  const params: Record<string, any> = { limit, skip };
+  if (sortBy) {
+    params.sortBy = sortBy;
+  }
+  if (order) {
+    params.order = order;
+  }
+
+  const response = await axiosInstance.get<ProductsResponse>(
+    `/products/category/${category}`,
+    { params },
   );
   return response.data;
 };
