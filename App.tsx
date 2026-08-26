@@ -59,6 +59,7 @@ const App = () => {
           <NavigationContainer>
             <AppNavigator />
           </NavigationContainer>
+          <Toast config={toastConfig} />
         </SafeAreaProvider>
       </PersistGate>
     </Provider>

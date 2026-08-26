@@ -105,6 +105,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.card,
     borderRadius: 24,
     height: 250,
+    borderWidth: 0.5,
   },
   InnerContainer: {
     flex: 1,
@@ -134,7 +135,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   BadgeText: {
-    color: '#fff',
+    color: '#000',
     fontWeight: 'bold',
     fontSize: 10,
   },

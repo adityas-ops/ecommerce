@@ -30,7 +30,11 @@ interface FilterBottomSheetProps {
 const SORT_OPTIONS: { label: string; value: SortOption; icon: string }[] = [
   { label: 'Default', value: 'none', icon: 'reorder-two-outline' },
   { label: 'Price: Low to High', value: 'price-asc', icon: 'arrow-up-outline' },
-  { label: 'Price: High to Low', value: 'price-desc', icon: 'arrow-down-outline' },
+  {
+    label: 'Price: High to Low',
+    value: 'price-desc',
+    icon: 'arrow-down-outline',
+  },
   { label: 'Name: A to Z', value: 'title-asc', icon: 'text-outline' },
   { label: 'Name: Z to A', value: 'title-desc', icon: 'text-outline' },
 ];
@@ -115,7 +119,9 @@ const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
                       <Ionicons
                         name={opt.icon as any}
                         size={18}
-                        color={isSelected ? colors.primary : colors.mutedForeground}
+                        color={
+                          isSelected ? colors.primary : colors.mutedForeground
+                        }
                         style={{ marginRight: 10 }}
                       />
                       <Text

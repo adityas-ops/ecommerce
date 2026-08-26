@@ -10,11 +10,14 @@ import Ionicons, {
 } from '@react-native-vector-icons/ionicons/static';
 import { StyleSheet } from 'react-native';
 import colors from '../theme/colors';
+import { RootState } from '../store/store';
 
 const Tab = createBottomTabNavigator();
 
 const TabNav = () => {
   const insets = useSafeAreaInsets();
+  const cartItems = useSelector((state: RootState) => state.cart.items);
+  const cartCount = cartItems.reduce((total, item) => total + item.count, 0);
 
   return (
     <Tab.Navigator
@@ -58,6 +61,7 @@ const TabNav = () => {
         name="Cart"
         component={Cart}
         options={{
+          tabBarBadge: cartCount > 0 ? cartCount : undefined,
           tabBarBadgeStyle: {
             backgroundColor: colors.destructive,
             color: colors.primaryForeground,

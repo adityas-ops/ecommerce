@@ -13,9 +13,9 @@ export interface ThemeColors {
 }
 
 const Colors = {
-  background: '#FAFAFA',
+  background: '#f0eeeeff',
   foreground: '#111111',
-  card: '#FFFFFF',
+  card: '#ffffffff',
   primary: '#6C5CE7',
   primaryForeground: '#FFFFFF',
   secondary: '#F4F3FF',
@@ -23,6 +23,6 @@ const Colors = {
   mutedForeground: '#9B9B9B',
   destructive: '#FF4757',
   border: '#EBEBEB',
-  badgeColor: '#FF4757',
+  badgeColor: '#47ff63ff',
 };
 export default Colors;
