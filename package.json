@@ -26,7 +26,8 @@
     "react-native-nitro-modules": "^0.37.0",
     "react-native-safe-area-context": "^5.9.1",
     "react-native-screens": "^4.27.0",
-    "react-redux": "^9.3.0"
+    "react-redux": "^9.3.0",
+    "redux-persist": "^6.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
