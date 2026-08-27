@@ -27,17 +27,15 @@ interface FilterBottomSheetProps {
   onApply: (category: string, sort: SortOption) => void;
 }
 
-const SORT_OPTIONS: { label: string; value: SortOption; icon: string }[] = [
-  { label: 'Default', value: 'none', icon: 'reorder-two-outline' },
-  { label: 'Price: Low to High', value: 'price-asc', icon: 'arrow-up-outline' },
-  {
-    label: 'Price: High to Low',
-    value: 'price-desc',
-    icon: 'arrow-down-outline',
-  },
-  { label: 'Name: A to Z', value: 'title-asc', icon: 'text-outline' },
-  { label: 'Name: Z to A', value: 'title-desc', icon: 'text-outline' },
+const SORT_OPTIONS: { label: string; value: SortOption }[] = [
+  { label: 'Default', value: 'none' },
+  { label: 'Price: Low to High', value: 'price-asc' },
+  { label: 'Price: High to Low', value: 'price-desc' },
+  { label: 'Name: A to Z', value: 'title-asc' },
+  { label: 'Name: Z to A', value: 'title-desc' },
 ];
+
+type LeftTab = 'sort' | 'filter';
 
 const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
   visible,
@@ -47,6 +45,7 @@ const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
   onClose,
   onApply,
 }) => {
+  const [activeTab, setActiveTab] = useState<LeftTab>('sort');
   const [draftCategory, setDraftCategory] = useState<string>(selectedCategory);
   const [draftSort, setDraftSort] = useState<SortOption>(selectedSort);
 
@@ -54,6 +53,7 @@ const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
     if (visible) {
       setDraftCategory(selectedCategory);
       setDraftSort(selectedSort);
+      setActiveTab('sort');
     }
   }, [visible, selectedCategory, selectedSort]);
 
@@ -68,6 +68,7 @@ const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
   };
 
   const formatCategoryName = (name: string) => {
+    if (!name) return 'All Categories';
     return name
       .split('-')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
@@ -85,118 +86,184 @@ const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
         <Pressable style={styles.backdrop} onPress={onClose} />
 
         <View style={styles.sheetContainer}>
-          {/* Handle indicator bar */}
-          <View style={styles.handleBar} />
-
-          {/* Header */}
+          {/* Top Header */}
           <View style={styles.header}>
-            <Text style={styles.headerTitle}>Filter & Sort</Text>
+            <Text style={styles.headerTitle}>Sort & Filter</Text>
             <TouchableOpacity onPress={handleReset} activeOpacity={0.7}>
               <Text style={styles.resetText}>Reset All</Text>
             </TouchableOpacity>
           </View>
 
-          <ScrollView
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.scrollContent}
-          >
-            {/* 1. Sorting Section */}
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Sort By</Text>
-              <View style={styles.sortList}>
-                {SORT_OPTIONS.map(opt => {
-                  const isSelected = draftSort === opt.value;
-                  return (
-                    <TouchableOpacity
-                      key={opt.value}
-                      style={[
-                        styles.sortOption,
-                        isSelected && styles.sortOptionSelected,
-                      ]}
-                      onPress={() => setDraftSort(opt.value)}
-                      activeOpacity={0.8}
-                    >
-                      <Ionicons
-                        name={opt.icon as any}
-                        size={18}
-                        color={
-                          isSelected ? colors.primary : colors.mutedForeground
-                        }
-                        style={{ marginRight: 10 }}
-                      />
-                      <Text
-                        style={[
-                          styles.sortOptionLabel,
-                          isSelected && styles.sortOptionLabelSelected,
-                        ]}
-                      >
-                        {opt.label}
-                      </Text>
-                      {isSelected && (
-                        <Ionicons
-                          name="checkmark"
-                          size={18}
-                          color={colors.primary}
-                          style={{ marginLeft: 'auto' }}
-                        />
-                      )}
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-            </View>
-
-            {/* 2. Categories Filter Section */}
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Categories</Text>
-              <View style={styles.categoriesWrap}>
-                <TouchableOpacity
+          {/* Split Content Body */}
+          <View style={styles.splitBody}>
+            {/* Left Sidebar (Narrow Width Navigation) */}
+            <View style={styles.leftSidebar}>
+              <TouchableOpacity
+                style={[
+                  styles.tabItem,
+                  activeTab === 'sort' && styles.tabItemActive,
+                ]}
+                onPress={() => setActiveTab('sort')}
+                activeOpacity={0.8}
+              >
+                {activeTab === 'sort' && <View style={styles.activeIndicator} />}
+                <Text
                   style={[
-                    styles.categoryChip,
-                    !draftCategory && styles.categoryChipSelected,
+                    styles.tabItemText,
+                    activeTab === 'sort' && styles.tabItemTextActive,
                   ]}
-                  onPress={() => setDraftCategory('')}
-                  activeOpacity={0.8}
                 >
-                  <Text
-                    style={[
-                      styles.categoryChipText,
-                      !draftCategory && styles.categoryChipTextSelected,
-                    ]}
-                  >
-                    All Categories
-                  </Text>
-                </TouchableOpacity>
+                  Sort By
+                </Text>
+                {draftSort !== 'none' && <View style={styles.dotBadge} />}
+              </TouchableOpacity>
 
-                {categories.map(cat => {
-                  const isSelected = draftCategory === cat;
-                  return (
+              <TouchableOpacity
+                style={[
+                  styles.tabItem,
+                  activeTab === 'filter' && styles.tabItemActive,
+                ]}
+                onPress={() => setActiveTab('filter')}
+                activeOpacity={0.8}
+              >
+                {activeTab === 'filter' && <View style={styles.activeIndicator} />}
+                <Text
+                  style={[
+                    styles.tabItemText,
+                    activeTab === 'filter' && styles.tabItemTextActive,
+                  ]}
+                >
+                  Category
+                </Text>
+                {Boolean(draftCategory) && <View style={styles.dotBadge} />}
+              </TouchableOpacity>
+            </View>
+
+            {/* Right Main Content Area */}
+            <View style={styles.rightContent}>
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={styles.rightScrollContent}
+              >
+                {activeTab === 'sort' ? (
+                  <View style={styles.optionsList}>
+                    {SORT_OPTIONS.map(opt => {
+                      const isSelected = draftSort === opt.value;
+                      return (
+                        <TouchableOpacity
+                          key={opt.value}
+                          style={[
+                            styles.optionRow,
+                            isSelected && styles.optionRowSelected,
+                          ]}
+                          onPress={() => setDraftSort(opt.value)}
+                          activeOpacity={0.7}
+                        >
+                          <Text
+                            style={[
+                              styles.optionLabel,
+                              isSelected && styles.optionLabelSelected,
+                            ]}
+                          >
+                            {opt.label}
+                          </Text>
+                          <View
+                            style={[
+                              styles.checkbox,
+                              isSelected && styles.checkboxSelected,
+                            ]}
+                          >
+                            {isSelected && (
+                              <Ionicons
+                                name="checkmark"
+                                size={14}
+                                color={colors.primaryForeground}
+                              />
+                            )}
+                          </View>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+                ) : (
+                  <View style={styles.optionsList}>
                     <TouchableOpacity
-                      key={cat}
                       style={[
-                        styles.categoryChip,
-                        isSelected && styles.categoryChipSelected,
+                        styles.optionRow,
+                        !draftCategory && styles.optionRowSelected,
                       ]}
-                      onPress={() => setDraftCategory(cat)}
-                      activeOpacity={0.8}
+                      onPress={() => setDraftCategory('')}
+                      activeOpacity={0.7}
                     >
                       <Text
                         style={[
-                          styles.categoryChipText,
-                          isSelected && styles.categoryChipTextSelected,
+                          styles.optionLabel,
+                          !draftCategory && styles.optionLabelSelected,
                         ]}
                       >
-                        {formatCategoryName(cat)}
+                        All Categories
                       </Text>
+                      <View
+                        style={[
+                          styles.checkbox,
+                          !draftCategory && styles.checkboxSelected,
+                        ]}
+                      >
+                        {!draftCategory && (
+                          <Ionicons
+                            name="checkmark"
+                            size={14}
+                            color={colors.primaryForeground}
+                          />
+                        )}
+                      </View>
                     </TouchableOpacity>
-                  );
-                })}
-              </View>
-            </View>
-          </ScrollView>
 
-          {/* Action Buttons */}
-          <View style={styles.buttonRow}>
+                    {categories.map(cat => {
+                      const isSelected = draftCategory === cat;
+                      return (
+                        <TouchableOpacity
+                          key={cat}
+                          style={[
+                            styles.optionRow,
+                            isSelected && styles.optionRowSelected,
+                          ]}
+                          onPress={() => setDraftCategory(cat)}
+                          activeOpacity={0.7}
+                        >
+                          <Text
+                            style={[
+                              styles.optionLabel,
+                              isSelected && styles.optionLabelSelected,
+                            ]}
+                          >
+                            {formatCategoryName(cat)}
+                          </Text>
+                          <View
+                            style={[
+                              styles.checkbox,
+                              isSelected && styles.checkboxSelected,
+                            ]}
+                          >
+                            {isSelected && (
+                              <Ionicons
+                                name="checkmark"
+                                size={14}
+                                color={colors.primaryForeground}
+                              />
+                            )}
+                          </View>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+                )}
+              </ScrollView>
+            </View>
+          </View>
+
+          {/* Footer Action Buttons */}
+          <View style={styles.footer}>
             <TouchableOpacity
               style={styles.cancelButton}
               onPress={onClose}
@@ -210,7 +277,7 @@ const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
               onPress={handleApply}
               activeOpacity={0.8}
             >
-              <Text style={styles.applyButtonText}>Apply Filters</Text>
+              <Text style={styles.applyButtonText}>Apply</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -232,30 +299,22 @@ const styles = StyleSheet.create({
     backgroundColor: colors.card,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    maxHeight: '85%',
-    paddingBottom: 24,
-  },
-  handleBar: {
-    width: 40,
-    height: 4,
-    backgroundColor: colors.border,
-    borderRadius: 2,
-    alignSelf: 'center',
-    marginTop: 10,
-    marginBottom: 8,
+    height: '65%',
+    flexDirection: 'column',
+    overflow: 'hidden',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingVertical: 12,
+    paddingVertical: 16,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: '800',
     color: colors.foreground,
   },
   resetText: {
@@ -263,83 +322,111 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: colors.destructive,
   },
-  scrollContent: {
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 16,
+  splitBody: {
+    flex: 1,
+    flexDirection: 'row',
   },
-  section: {
-    marginBottom: 24,
+  leftSidebar: {
+    width: '32%',
+    backgroundColor: colors.secondary,
+    borderRightWidth: 1,
+    borderRightColor: colors.border,
   },
-  sectionTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: colors.foreground,
-    marginBottom: 12,
-  },
-  sortList: {
-    backgroundColor: colors.background,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: colors.border,
-    overflow: 'hidden',
-  },
-  sortOption: {
+  tabItem: {
+    paddingVertical: 18,
+    paddingHorizontal: 16,
+    borderBottomWidth: 0.5,
+    borderBottomColor: colors.border,
+    position: 'relative',
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    justifyContent: 'space-between',
   },
-  sortOptionSelected: {
-    backgroundColor: colors.secondary,
+  tabItemActive: {
+    backgroundColor: colors.card,
   },
-  sortOptionLabel: {
+  activeIndicator: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 4,
+    backgroundColor: colors.primary,
+  },
+  tabItemText: {
     fontSize: 14,
-    color: colors.foreground,
-    fontWeight: '500',
+    fontWeight: '600',
+    color: colors.mutedForeground,
   },
-  sortOptionLabelSelected: {
+  tabItemTextActive: {
     color: colors.primary,
     fontWeight: '700',
   },
-  categoriesWrap: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
+  dotBadge: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.primary,
   },
-  categoryChip: {
-    paddingHorizontal: 14,
+  rightContent: {
+    flex: 1,
+    backgroundColor: colors.card,
+  },
+  rightScrollContent: {
     paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: colors.secondary,
-    borderWidth: 1,
-    borderColor: colors.border,
+    paddingHorizontal: 12,
   },
-  categoryChipSelected: {
+  optionsList: {
+    gap: 4,
+  },
+  optionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+  },
+  optionRowSelected: {
+    backgroundColor: colors.secondary,
+  },
+  optionLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: colors.foreground,
+    flex: 1,
+    marginRight: 8,
+  },
+  optionLabelSelected: {
+    fontWeight: '700',
+    color: colors.primary,
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderRadius: 6,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  checkboxSelected: {
     backgroundColor: colors.primary,
     borderColor: colors.primary,
   },
-  categoryChipText: {
-    fontSize: 13,
-    fontWeight: '500',
-    color: colors.foreground,
-  },
-  categoryChipTextSelected: {
-    color: colors.primaryForeground,
-    fontWeight: '700',
-  },
-  buttonRow: {
+  footer: {
     flexDirection: 'row',
     paddingHorizontal: 20,
+    paddingVertical: 14,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
     gap: 12,
-    marginTop: 8,
+    backgroundColor: colors.card,
   },
   cancelButton: {
     flex: 1,
-    paddingVertical: 14,
-    borderRadius: 12,
+    paddingVertical: 12,
+    borderRadius: 24,
     backgroundColor: colors.secondary,
     borderWidth: 1,
     borderColor: colors.border,
@@ -351,9 +438,9 @@ const styles = StyleSheet.create({
     color: colors.foreground,
   },
   applyButton: {
-    flex: 2,
-    paddingVertical: 14,
-    borderRadius: 12,
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 24,
     backgroundColor: colors.primary,
     alignItems: 'center',
   },

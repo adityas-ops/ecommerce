@@ -179,7 +179,6 @@ const Home = () => {
           </View>
         </View>
 
-        {/* Search Bar & Filter Icon Row */}
         <View style={styles.SearchParentContainer}>
           <View style={styles.SearchAndFilterRow}>
             <View style={styles.SearchContainer}>
@@ -236,58 +235,6 @@ const Home = () => {
             </TouchableOpacity>
           </View>
         </View>
-
-        {/* Horizontal Categories Pills */}
-        {/* <View style={styles.CategoryPillsContainer}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.CategoryPillsContent}
-          >
-            <TouchableOpacity
-              style={[
-                styles.Pill,
-                !selectedCategory && styles.PillSelected,
-              ]}
-              onPress={() => setSelectedCategory('')}
-              activeOpacity={0.8}
-            >
-              <Text
-                style={[
-                  styles.PillText,
-                  !selectedCategory && styles.PillTextSelected,
-                ]}
-              >
-                All
-              </Text>
-            </TouchableOpacity>
-
-            {categories.map(cat => {
-              const isSelected = selectedCategory === cat;
-              return (
-                <TouchableOpacity
-                  key={cat}
-                  style={[styles.Pill, isSelected && styles.PillSelected]}
-                  onPress={() =>
-                    setSelectedCategory(prev => (prev === cat ? '' : cat))
-                  }
-                  activeOpacity={0.8}
-                >
-                  <Text
-                    style={[
-                      styles.PillText,
-                      isSelected && styles.PillTextSelected,
-                    ]}
-                  >
-                    {formatCategoryName(cat)}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </ScrollView>
-        </View> */}
-
-        {/* Product List */}
         <View style={styles.ProductContainer}>
           {loading && !refreshing ? (
             <ActivityIndicator
@@ -435,9 +382,9 @@ const styles = StyleSheet.create({
   },
   Badge: {
     position: 'absolute',
-    top: 4,
-    right: 4,
-    backgroundColor: colors.badgeColor,
+    top: 0,
+    right: 0,
+    backgroundColor: '#f61313ff',
     minWidth: 18,
     height: 18,
     borderRadius: 9,
