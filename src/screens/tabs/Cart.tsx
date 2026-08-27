@@ -6,13 +6,18 @@ import {
   ScrollView,
 } from 'react-native';
 import React from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import Ionicons from '@react-native-vector-icons/ionicons/static';
 import { RootState } from '../../store/store';
+import { RootStackParamList } from '../../navigations/AppNav';
 import CartCard from '../../components/cart/CartCard';
 import colors from '../../theme/colors';
 
 const Cart = () => {
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const cartItems = useSelector((state: RootState) => state.cart.items);
 
   const subtotal = cartItems.reduce(
@@ -26,6 +31,14 @@ const Cart = () => {
   const shipping = cartItems.length > 0 ? 6 : 0;
   const total = subtotal + shipping;
 
+  const handleCheckout = () => {
+    navigation.navigate('checkout');
+  };
+
+  const handleStartShopping = () => {
+    navigation.navigate('Home' as any);
+  };
+
   return (
     <View style={styles.Container}>
       <View style={styles.SafeContainer}>
@@ -37,41 +50,60 @@ const Cart = () => {
           </Text>
         </View>
 
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.ScrollContent}
-        >
-          {cartItems.length > 0 ? (
-            cartItems.map(item => <CartCard key={item.id} item={item} />)
-          ) : (
-            <View style={styles.EmptyState}>
-              <Text style={styles.EmptyText}>Your cart is empty.</Text>
-            </View>
-          )}
+        {cartItems.length > 0 ? (
+          <>
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={styles.ScrollContent}
+            >
+              {cartItems.map(item => (
+                <CartCard key={item.id} item={item} />
+              ))}
 
-          {cartItems.length > 0 && (
-            <View style={styles.SummaryCard}>
-              <View style={styles.SummaryRow}>
-                <Text style={styles.SummaryLabel}>Subtotal</Text>
-                <Text style={styles.SummaryValue}>${subtotal}</Text>
+              <View style={styles.SummaryCard}>
+                <View style={styles.SummaryRow}>
+                  <Text style={styles.SummaryLabel}>Subtotal</Text>
+                  <Text style={styles.SummaryValue}>${subtotal}</Text>
+                </View>
+                <View style={styles.SummaryRow}>
+                  <Text style={styles.SummaryLabel}>Shipping</Text>
+                  <Text style={styles.SummaryValue}>${shipping}</Text>
+                </View>
+                <View style={styles.Divider} />
+                <View style={styles.SummaryRow}>
+                  <Text style={styles.TotalLabel}>Total</Text>
+                  <Text style={styles.TotalValue}>${total}</Text>
+                </View>
               </View>
-              <View style={styles.SummaryRow}>
-                <Text style={styles.SummaryLabel}>Shipping</Text>
-                <Text style={styles.SummaryValue}>${shipping}</Text>
-              </View>
-              <View style={styles.Divider} />
-              <View style={styles.SummaryRow}>
-                <Text style={styles.TotalLabel}>Total</Text>
-                <Text style={styles.TotalValue}>${total}</Text>
-              </View>
-            </View>
-          )}
-        </ScrollView>
+            </ScrollView>
 
-        {cartItems.length > 0 && (
-          <View style={styles.Footer}>
-            <TouchableOpacity style={styles.CheckoutButton} activeOpacity={0.8}>
-              <Text style={styles.CheckoutText}>Checkout</Text>
+            <View style={styles.Footer}>
+              <TouchableOpacity
+                style={styles.CheckoutButton}
+                activeOpacity={0.8}
+                onPress={handleCheckout}
+              >
+                <Text style={styles.CheckoutText}>Checkout</Text>
+              </TouchableOpacity>
+            </View>
+          </>
+        ) : (
+          <View style={styles.EmptyContainer}>
+            <View style={styles.EmptyIconCircle}>
+              <Ionicons name="cart-outline" size={60} color={colors.primary} />
+            </View>
+            <Text style={styles.EmptyTitle}>Your Cart is Empty</Text>
+            <Text style={styles.EmptySubtitle}>
+              Looks like you haven't added anything to your cart yet. Explore
+              our products and add your favorite items!
+            </Text>
+
+            <TouchableOpacity
+              style={styles.ShopNowButton}
+              onPress={handleStartShopping}
+              activeOpacity={0.85}
+            >
+              <Text style={styles.ShopNowButtonText}>Start Shopping</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -114,6 +146,7 @@ const styles = StyleSheet.create({
     padding: 24,
     marginTop: 8,
     borderWidth: 0.5,
+    borderColor: colors.border,
   },
   SummaryRow: {
     flexDirection: 'row',
@@ -163,13 +196,47 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-  EmptyState: {
-    paddingVertical: 60,
+  EmptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 32,
+    marginTop: -40,
+  },
+  EmptyIconCircle: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: colors.secondary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  EmptyTitle: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: colors.foreground,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  EmptySubtitle: {
+    fontSize: 14,
+    color: colors.mutedForeground,
+    textAlign: 'center',
+    lineHeight: 22,
+    marginBottom: 28,
+  },
+  ShopNowButton: {
+    backgroundColor: colors.primary,
+    paddingVertical: 14,
+    paddingHorizontal: 36,
+    borderRadius: 25,
     alignItems: 'center',
   },
-  EmptyText: {
+  ShopNowButtonText: {
+    color: colors.primaryForeground,
     fontSize: 16,
-    color: colors.mutedForeground,
+    fontWeight: '700',
   },
 });
 

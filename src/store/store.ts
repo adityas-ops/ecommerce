@@ -14,6 +14,7 @@ import { createMMKV } from 'react-native-mmkv';
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import cartReducer from './slices/cartSlice';
 import userReducer from './slices/userSlice';
+import checkoutReducer from './slices/checkoutSlice';
 
 const storage = createMMKV();
 
@@ -35,12 +36,13 @@ export const mmkvStorage: Storage = {
 const rootReducer = combineReducers({
   cart: cartReducer,
   user: userReducer,
+  checkout: checkoutReducer,
 });
 
 const persistConfig = {
   key: 'root',
   storage: mmkvStorage,
-  whitelist: ['cart', 'user'],
+  whitelist: ['cart', 'user', 'checkout'],
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

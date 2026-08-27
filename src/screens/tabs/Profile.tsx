@@ -2,6 +2,8 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useAppDispatch, useAppSelector } from '../../store/store';
 import { clearUser } from '../../store/slices/userSlice';
+import { clearCart } from '../../store/slices/cartSlice';
+import { clearCheckoutDetails } from '../../store/slices/checkoutSlice';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigations/AppNav';
@@ -19,6 +21,8 @@ const Profile = () => {
 
   const handleLogout = () => {
     dispatch(clearUser());
+    dispatch(clearCart());
+    dispatch(clearCheckoutDetails());
     navigation.reset({
       index: 0,
       routes: [{ name: 'login' }],

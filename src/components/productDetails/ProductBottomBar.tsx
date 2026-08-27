@@ -22,16 +22,12 @@ const ProductBottomBar: React.FC<Props> = ({
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <TouchableOpacity
-        style={[
-          styles.button,
-          { backgroundColor: isAdded ? '#4CAF50' : colors.primary },
-        ]}
+        style={[styles.button]}
         activeOpacity={0.8}
         onPress={onAddToCart}
-        disabled={isAdded} // Disable if already added to avoid redundant additions
       >
         <Text style={[styles.buttonText, { color: '#FFFFFF' }]}>
-          {isAdded ? 'Added' : `Add to Cart · $${discountedPrice}`}
+          {`Add to Cart · $${discountedPrice}`}
         </Text>
       </TouchableOpacity>
     </View>
@@ -55,6 +51,7 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: colors.primary,
   },
   buttonText: {
     fontSize: 16,

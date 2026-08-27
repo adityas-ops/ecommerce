@@ -59,7 +59,7 @@ const ProductDetails = () => {
       Toast.show({
         type: 'success',
         text1: 'Product added to cart',
-        position: 'bottom',
+        position: 'top',
         bottomOffset: 80,
         visibilityTime: 1500,
       });

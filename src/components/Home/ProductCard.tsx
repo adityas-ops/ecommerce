@@ -33,11 +33,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     Toast.show({
       type: 'success',
       text1: 'Product added',
-      position: 'bottom',
+      position: 'top',
       topOffset: 60,
       visibilityTime: 1000,
       autoHide: true,
-      bottomOffset: 60,
     });
   };
 
@@ -103,13 +102,13 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 const styles = StyleSheet.create({
   CardContainer: {
     backgroundColor: colors.card,
-    borderRadius: 24,
+    borderRadius: 18,
     height: 250,
     borderWidth: 0.5,
   },
   InnerContainer: {
     flex: 1,
-    borderRadius: 24,
+    borderRadius: 18,
     overflow: 'hidden',
   },
   ImageWrapper: {
