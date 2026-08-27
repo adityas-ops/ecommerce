@@ -22,7 +22,7 @@ const Colors = {
   muted: '#F0F0F0',
   mutedForeground: '#9B9B9B',
   destructive: '#FF4757',
-  border: '#EBEBEB',
+  border: '#b8b7b7ff',
   badgeColor: '#47ff63ff',
 };
 export default Colors;
