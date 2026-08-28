@@ -22,12 +22,16 @@ import {
   getCategoriesList,
   getProductsByCategory,
 } from '../../api/productApi';
+import { useRoute, RouteProp } from '@react-navigation/native';
 import { Product } from '../../types/product';
 import colors from '../../theme/colors';
 
 const LIMIT = 10;
 
+type HomeRouteProp = RouteProp<{ Home: { category?: string } }, 'Home'>;
+
 const Home = () => {
+  const route = useRoute<HomeRouteProp>();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
@@ -43,6 +47,12 @@ const Home = () => {
 
   const activeFilterCount =
     (selectedCategory ? 1 : 0) + (selectedSort !== 'none' ? 1 : 0);
+
+  useEffect(() => {
+    if (route.params?.category) {
+      setSelectedCategory(route.params.category);
+    }
+  }, [route.params?.category]);
 
   useEffect(() => {
     const loadCategories = async () => {

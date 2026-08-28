@@ -11,8 +11,9 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useAppDispatch } from '../store/store';
+import { useAppDispatch, useAppSelector } from '../store/store';
 import { setUser } from '../store/slices/userSlice';
+import { clearPendingDeepLink } from '../store/slices/deepLinkSlice';
 import { RootStackParamList } from '../navigations/AppNav';
 import colors from '../theme/colors';
 
@@ -29,6 +30,9 @@ const Login = () => {
 
   const dispatch = useAppDispatch();
   const navigation = useNavigation<LoginScreenNavigationProp>();
+  const pendingDeepLink = useAppSelector(
+    state => state.deepLink.pendingDeepLink,
+  );
 
   const validateEmail = (emailStr: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -68,10 +72,18 @@ const Login = () => {
     setPasswordError('');
     dispatch(setUser({ email: trimmedEmail, password: trimmedPassword }));
 
-    navigation.reset({
-      index: 0,
-      routes: [{ name: 'Tabs' }],
-    });
+    if (pendingDeepLink === 'cart') {
+      dispatch(clearPendingDeepLink());
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Tabs', params: { screen: 'Cart' } }],
+      });
+    } else {
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Tabs' }],
+      });
+    }
   };
 
   return (

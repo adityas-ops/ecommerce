@@ -15,6 +15,7 @@ import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import cartReducer from './slices/cartSlice';
 import userReducer from './slices/userSlice';
 import checkoutReducer from './slices/checkoutSlice';
+import deepLinkReducer from './slices/deepLinkSlice';
 
 const storage = createMMKV();
 
@@ -37,12 +38,13 @@ const rootReducer = combineReducers({
   cart: cartReducer,
   user: userReducer,
   checkout: checkoutReducer,
+  deepLink: deepLinkReducer,
 });
 
 const persistConfig = {
   key: 'root',
   storage: mmkvStorage,
-  whitelist: ['cart', 'user', 'checkout'],
+  whitelist: ['cart', 'user', 'checkout', 'deepLink'],
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

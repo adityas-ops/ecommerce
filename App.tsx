@@ -1,15 +1,26 @@
-import React from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { NavigationContainer } from '@react-navigation/native';
+import {
+  NavigationContainer,
+  createNavigationContainerRef,
+} from '@react-navigation/native';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import { store, persistor } from './src/store/store';
-import AppNavigator from './src/navigations/AppNav';
-import { Text, TouchableOpacity, View } from 'react-native';
+import AppNavigator, { RootStackParamList } from './src/navigations/AppNav';
+import { Text, TouchableOpacity, View, Linking } from 'react-native';
 import Ionicons from '@react-native-vector-icons/ionicons/static';
 import Toast from 'react-native-toast-message';
+import { handleDeepLinkUrl } from './src/utils/deepLinkHandler';
+import InvalidLinkModal from './src/components/InvalidLinkModal';
 
-const App = () => {
+export const navigationRef =
+  createNavigationContainerRef<RootStackParamList>();
+
+const AppContent = () => {
+  const initialUrlRef = useRef<string | null>(null);
+  const processedInitialUrlRef = useRef<string | null>(null);
+
   const toastConfig = {
     success: (props: any) => (
       <View
@@ -52,15 +63,88 @@ const App = () => {
     ),
   };
 
+  const processUrl = useCallback((url: string | null, isInitial = false) => {
+    if (!url) {
+      return;
+    }
+
+    // Skip re-processing cached initial launch intent URL on reload/refresh
+    if (isInitial && processedInitialUrlRef.current === url) {
+      return;
+    }
+
+    if (navigationRef.isReady()) {
+      if (isInitial) {
+        processedInitialUrlRef.current = url;
+      }
+      handleDeepLinkUrl(url, (screen, params) => {
+        navigationRef.navigate(screen as any, params);
+      });
+    } else {
+      initialUrlRef.current = url;
+    }
+  }, []);
+
+  useEffect(() => {
+    // 1. Warm start listener (App running in background or open)
+    const subscription = Linking.addEventListener('url', event => {
+      processUrl(event.url, false);
+    });
+
+    // 2. Cold start check (App launched from closed state)
+    Linking.getInitialURL().then(url => {
+      if (url) {
+        processUrl(url, true);
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, [processUrl]);
+
+  const handleContainerReady = () => {
+    if (initialUrlRef.current) {
+      const pendingUrl = initialUrlRef.current;
+      initialUrlRef.current = null;
+
+      if (processedInitialUrlRef.current === pendingUrl) {
+        return;
+      }
+      processedInitialUrlRef.current = pendingUrl;
+
+      setTimeout(() => {
+        handleDeepLinkUrl(pendingUrl, (screen, params) => {
+          if (navigationRef.isReady()) {
+            navigationRef.navigate(screen as any, params);
+          }
+        });
+      }, 100);
+    }
+  };
+
+  return (
+    <SafeAreaProvider>
+      <NavigationContainer ref={navigationRef} onReady={handleContainerReady}>
+        <AppNavigator />
+      </NavigationContainer>
+      <InvalidLinkModal
+        onNavigateHome={() => {
+          if (navigationRef.isReady()) {
+            navigationRef.navigate('Tabs' as any);
+          }
+        }}
+      />
+      <Toast config={toastConfig} />
+    </SafeAreaProvider>
+  );
+};
+
+const App = () => {
   return (
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
-        <SafeAreaProvider>
-          <NavigationContainer>
-            <AppNavigator />
-          </NavigationContainer>
-          <Toast config={toastConfig} />
-        </SafeAreaProvider>
+        <AppContent />
       </PersistGate>
     </Provider>
   );
