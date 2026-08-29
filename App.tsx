@@ -13,11 +13,13 @@ import Ionicons from '@react-native-vector-icons/ionicons/static';
 import Toast from 'react-native-toast-message';
 import { handleDeepLinkUrl } from './src/utils/deepLinkHandler';
 import InvalidLinkModal from './src/components/InvalidLinkModal';
+import { useDynamicAppIcon } from './src/hooks/useDynamicAppIcon';
 
 export const navigationRef =
   createNavigationContainerRef<RootStackParamList>();
 
 const AppContent = () => {
+  useDynamicAppIcon();
   const initialUrlRef = useRef<string | null>(null);
   const processedInitialUrlRef = useRef<string | null>(null);
 

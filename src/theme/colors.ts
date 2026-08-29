@@ -13,7 +13,7 @@ export interface ThemeColors {
 }
 
 const Colors = {
-  background: '#f0eeeeff',
+  background: '#ffffffff',
   foreground: '#111111',
   card: '#ffffffff',
   primary: '#6C5CE7',

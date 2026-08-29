@@ -127,6 +127,12 @@ export const handleDeepLinkUrl = async (
     return;
   }
 
+  // 4. myapp://profile
+  if (routeName === 'profile') {
+    navigate('Tabs', { screen: 'Profile' });
+    return;
+  }
+
   // 4. Invalid or unrecognized URL
   store.dispatch(
     setInvalidDeepLink({

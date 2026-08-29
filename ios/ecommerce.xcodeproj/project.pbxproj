@@ -12,6 +12,11 @@
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		7FDE4D49ABE2C762BE7F7899 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
+		A1B2C3D4E5F6A7B8C9D0E1F1 /* ic_launcher_promotional@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A7B8C9D0E1F3 /* ic_launcher_promotional@2x.png */; };
+		A1B2C3D4E5F6A7B8C9D0E1F2 /* ic_launcher_promotional@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A7B8C9D0E1F4 /* ic_launcher_promotional@3x.png */; };
+		B1B2C3D4E5F6A7B8C9D0E1F1 /* promotional@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = B1B2C3D4E5F6A7B8C9D0E1F3 /* promotional@2x.png */; };
+		B1B2C3D4E5F6A7B8C9D0E1F2 /* promotional@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = B1B2C3D4E5F6A7B8C9D0E1F4 /* promotional@3x.png */; };
+		B1B2C3D4E5F6A7B8C9D0E1F5 /* promotional@2x~ipad.png in Resources */ = {isa = PBXBuildFile; fileRef = B1B2C3D4E5F6A7B8C9D0E1F6 /* promotional@2x~ipad.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -24,6 +29,11 @@
 		5DCACB8F33CDC322A6C60F78 /* libPods-ecommerce.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-ecommerce.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = ecommerce/AppDelegate.swift; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = ecommerce/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		A1B2C3D4E5F6A7B8C9D0E1F3 /* ic_launcher_promotional@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "ic_launcher_promotional@2x.png"; path = "ecommerce/ic_launcher_promotional@2x.png"; sourceTree = "<group>"; };
+		A1B2C3D4E5F6A7B8C9D0E1F4 /* ic_launcher_promotional@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "ic_launcher_promotional@3x.png"; path = "ecommerce/ic_launcher_promotional@3x.png"; sourceTree = "<group>"; };
+		B1B2C3D4E5F6A7B8C9D0E1F3 /* promotional@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "promotional@2x.png"; path = "ecommerce/promotional@2x.png"; sourceTree = "<group>"; };
+		B1B2C3D4E5F6A7B8C9D0E1F4 /* promotional@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "promotional@3x.png"; path = "ecommerce/promotional@3x.png"; sourceTree = "<group>"; };
+		B1B2C3D4E5F6A7B8C9D0E1F6 /* promotional@2x~ipad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "promotional@2x~ipad.png"; path = "ecommerce/promotional@2x~ipad.png"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -47,6 +57,11 @@
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
 				13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */,
+				A1B2C3D4E5F6A7B8C9D0E1F3 /* ic_launcher_promotional@2x.png */,
+				A1B2C3D4E5F6A7B8C9D0E1F4 /* ic_launcher_promotional@3x.png */,
+				B1B2C3D4E5F6A7B8C9D0E1F3 /* promotional@2x.png */,
+				B1B2C3D4E5F6A7B8C9D0E1F4 /* promotional@3x.png */,
+				B1B2C3D4E5F6A7B8C9D0E1F6 /* promotional@2x~ipad.png */,
 			);
 			name = ecommerce;
 			sourceTree = "<group>";
@@ -161,6 +176,11 @@
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				7FDE4D49ABE2C762BE7F7899 /* PrivacyInfo.xcprivacy in Resources */,
+				A1B2C3D4E5F6A7B8C9D0E1F1 /* ic_launcher_promotional@2x.png in Resources */,
+				A1B2C3D4E5F6A7B8C9D0E1F2 /* ic_launcher_promotional@3x.png in Resources */,
+				B1B2C3D4E5F6A7B8C9D0E1F1 /* promotional@2x.png in Resources */,
+				B1B2C3D4E5F6A7B8C9D0E1F2 /* promotional@3x.png in Resources */,
+				B1B2C3D4E5F6A7B8C9D0E1F5 /* promotional@2x~ipad.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -257,7 +277,11 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 3B4392A12AC88292D35C810B /* Pods-ecommerce.debug.xcconfig */;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = (
+					promotional,
+				);
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_BITCODE = NO;
@@ -287,7 +311,11 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 5709B34CF0A7D63546082F79 /* Pods-ecommerce.release.xcconfig */;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = (
+					promotional,
+				);
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				INFOPLIST_FILE = ecommerce/Info.plist;
