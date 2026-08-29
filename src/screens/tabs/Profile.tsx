@@ -30,26 +30,13 @@ import {
   AppIconName,
   ScheduleStatus,
 } from '../../utils/appIconManager';
+import Ionicons from '@react-native-vector-icons/ionicons/static';
+import DatePicker from 'react-native-date-picker';
 
 type ProfileScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
   'Tabs'
 >;
-
-const MONTH_NAMES = [
-  'Jan',
-  'Feb',
-  'Mar',
-  'Apr',
-  'May',
-  'Jun',
-  'Jul',
-  'Aug',
-  'Sep',
-  'Oct',
-  'Nov',
-  'Dec',
-];
 
 const Profile = () => {
   const user = useAppSelector(state => state.user);
@@ -58,7 +45,7 @@ const Profile = () => {
 
   const [startDateObj, setStartDateObj] = useState<Date>(new Date());
   const [endDateObj, setEndDateObj] = useState<Date>(
-    new Date(Date.now() + 60 * 1000)
+    new Date(Date.now() + 60 * 1000),
   );
 
   const [activeIcon, setActiveIcon] = useState<AppIconName>('default');
@@ -71,14 +58,6 @@ const Profile = () => {
   // Modal State
   const [pickerModalVisible, setPickerModalVisible] = useState(false);
   const [pickerTarget, setPickerTarget] = useState<'start' | 'end'>('start');
-
-  // Temporary date state in Modal
-  const [tempYear, setTempYear] = useState(new Date().getFullYear());
-  const [tempMonth, setTempMonth] = useState(new Date().getMonth());
-  const [tempDay, setTempDay] = useState(new Date().getDate());
-  const [tempHour, setTempHour] = useState(12);
-  const [tempMinute, setTempMinute] = useState(0);
-  const [tempAmPm, setTempAmPm] = useState<'AM' | 'PM'>('AM');
 
   // Periodic UI refresh: updates status badges and applies icon ONLY if target changed
   const refreshUI = useCallback(() => {
@@ -129,45 +108,7 @@ const Profile = () => {
 
   const openDateTimePicker = (target: 'start' | 'end') => {
     setPickerTarget(target);
-    const baseDate = target === 'start' ? startDateObj : endDateObj;
-
-    setTempYear(baseDate.getFullYear());
-    setTempMonth(baseDate.getMonth());
-    setTempDay(baseDate.getDate());
-
-    let h = baseDate.getHours();
-    const ampm = h >= 12 ? 'PM' : 'AM';
-    h = h % 12;
-    h = h ? h : 12;
-
-    setTempHour(h);
-    setTempMinute(baseDate.getMinutes());
-    setTempAmPm(ampm);
-
     setPickerModalVisible(true);
-  };
-
-  const handleConfirmPicker = () => {
-    let finalHour = tempHour;
-    if (tempAmPm === 'PM' && finalHour < 12) finalHour += 12;
-    if (tempAmPm === 'AM' && finalHour === 12) finalHour = 0;
-
-    const selectedDate = new Date(
-      tempYear,
-      tempMonth,
-      tempDay,
-      finalHour,
-      tempMinute
-    );
-
-    if (pickerTarget === 'start') {
-      setStartDateObj(selectedDate);
-    } else {
-      setEndDateObj(selectedDate);
-    }
-
-    setErrorMessage(null);
-    setPickerModalVisible(false);
   };
 
   const handleSaveSchedule = () => {
@@ -198,7 +139,7 @@ const Profile = () => {
     Toast.show({
       type: 'success',
       text1: `Schedule Saved! Icon: ${
-        applied === 'promotional' ? 'Promotional 🎁' : 'Default 📱'
+        applied === 'promotional' ? 'Promotional' : 'Default'
       }`,
     });
   };
@@ -239,7 +180,7 @@ const Profile = () => {
     Toast.show({
       type: 'success',
       text1: `1-Min Promo Active! Icon: ${
-        applied === 'promotional' ? 'Promotional 🎁' : 'Default 📱'
+        applied === 'promotional' ? 'Promotional' : 'Default'
       }`,
     });
   };
@@ -271,7 +212,6 @@ const Profile = () => {
 
   const statusBadge = getStatusBadgeStyle();
 
-  const daysInMonth = new Date(tempYear, tempMonth + 1, 0).getDate();
 
   return (
     <ScrollView
@@ -313,16 +253,19 @@ const Profile = () => {
         </View>
 
         <Text style={styles.sectionSubtitle}>
-          Automatically switch application icon during a configured promotional date window.
+          Automatically switch application icon during a configured promotional
+          date window.
         </Text>
 
         {/* Current Active Icon Banner */}
         <View style={styles.activeIconBanner}>
-          <Text style={styles.activeIconLabel}>Currently Applied Icon:</Text>
-          <Text style={styles.activeIconValue}>
-            {activeIcon === 'promotional'
-              ? '🎁 Promotional App Icon'
-              : '📱 Default App Icon'}
+          <Text style={styles.activeIconLabel}>
+            Currently Applied Icon :{' '}
+            <Text style={styles.activeIconValue}>
+              {activeIcon === 'promotional'
+                ? 'Promotional App Icon'
+                : 'Default App Icon'}
+            </Text>
           </Text>
         </View>
 
@@ -335,7 +278,7 @@ const Profile = () => {
             activeOpacity={0.7}
           >
             <Text style={styles.presetButtonText}>
-              ⚡ Test 1-Minute Promo (Starts Now)
+              Test 1-Minute Promo (Starts Now)
             </Text>
           </TouchableOpacity>
         </View>
@@ -348,7 +291,13 @@ const Profile = () => {
             onPress={() => openDateTimePicker('start')}
             activeOpacity={0.8}
           >
-            <Text style={styles.datePickerSelectorIcon}>📅</Text>
+            <Text style={styles.datePickerSelectorIcon}>
+              <Ionicons
+                name="calendar-clear-outline"
+                size={20}
+                color={colors.mutedForeground}
+              />
+            </Text>
             <Text style={styles.datePickerSelectorText}>
               {formatDisplayDate(startDateObj)}
             </Text>
@@ -363,7 +312,13 @@ const Profile = () => {
             onPress={() => openDateTimePicker('end')}
             activeOpacity={0.8}
           >
-            <Text style={styles.datePickerSelectorIcon}>📅</Text>
+            <Text style={styles.datePickerSelectorIcon}>
+              <Ionicons
+                name="calendar-clear-outline"
+                size={20}
+                color={colors.mutedForeground}
+              />
+            </Text>
             <Text style={styles.datePickerSelectorText}>
               {formatDisplayDate(endDateObj)}
             </Text>
@@ -406,194 +361,25 @@ const Profile = () => {
         </View>
       </View>
 
-      {/* Date & Time Picker Modal */}
-      <Modal
-        visible={pickerModalVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setPickerModalVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>
-              Select {pickerTarget === 'start' ? 'Start' : 'End'} Date & Time
-            </Text>
-
-            <ScrollView style={styles.modalScroll}>
-              {/* Date Selection Controls */}
-              <Text style={styles.modalSectionLabel}>Date Selection:</Text>
-              <View style={styles.selectorRow}>
-                {/* Month */}
-                <View style={styles.selectorCol}>
-                  <Text style={styles.subLabel}>Month</Text>
-                  <View style={styles.counterRow}>
-                    <TouchableOpacity
-                      style={styles.counterBtn}
-                      onPress={() =>
-                        setTempMonth(prev => (prev > 0 ? prev - 1 : 11))
-                      }
-                    >
-                      <Text style={styles.counterBtnText}>-</Text>
-                    </TouchableOpacity>
-                    <Text style={styles.counterValue}>
-                      {MONTH_NAMES[tempMonth]}
-                    </Text>
-                    <TouchableOpacity
-                      style={styles.counterBtn}
-                      onPress={() =>
-                        setTempMonth(prev => (prev < 11 ? prev + 1 : 0))
-                      }
-                    >
-                      <Text style={styles.counterBtnText}>+</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-
-                {/* Day */}
-                <View style={styles.selectorCol}>
-                  <Text style={styles.subLabel}>Day</Text>
-                  <View style={styles.counterRow}>
-                    <TouchableOpacity
-                      style={styles.counterBtn}
-                      onPress={() =>
-                        setTempDay(prev => (prev > 1 ? prev - 1 : daysInMonth))
-                      }
-                    >
-                      <Text style={styles.counterBtnText}>-</Text>
-                    </TouchableOpacity>
-                    <Text style={styles.counterValue}>
-                      {String(tempDay).padStart(2, '0')}
-                    </Text>
-                    <TouchableOpacity
-                      style={styles.counterBtn}
-                      onPress={() =>
-                        setTempDay(prev => (prev < daysInMonth ? prev + 1 : 1))
-                      }
-                    >
-                      <Text style={styles.counterBtnText}>+</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-
-                {/* Year */}
-                <View style={styles.selectorCol}>
-                  <Text style={styles.subLabel}>Year</Text>
-                  <View style={styles.counterRow}>
-                    <TouchableOpacity
-                      style={styles.counterBtn}
-                      onPress={() => setTempYear(prev => prev - 1)}
-                    >
-                      <Text style={styles.counterBtnText}>-</Text>
-                    </TouchableOpacity>
-                    <Text style={styles.counterValue}>{tempYear}</Text>
-                    <TouchableOpacity
-                      style={styles.counterBtn}
-                      onPress={() => setTempYear(prev => prev + 1)}
-                    >
-                      <Text style={styles.counterBtnText}>+</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </View>
-
-              {/* Time Selection Controls */}
-              <Text style={styles.modalSectionLabel}>Time Selection:</Text>
-              <View style={styles.selectorRow}>
-                {/* Hour */}
-                <View style={styles.selectorCol}>
-                  <Text style={styles.subLabel}>Hour</Text>
-                  <View style={styles.counterRow}>
-                    <TouchableOpacity
-                      style={styles.counterBtn}
-                      onPress={() =>
-                        setTempHour(prev => (prev > 1 ? prev - 1 : 12))
-                      }
-                    >
-                      <Text style={styles.counterBtnText}>-</Text>
-                    </TouchableOpacity>
-                    <Text style={styles.counterValue}>
-                      {String(tempHour).padStart(2, '0')}
-                    </Text>
-                    <TouchableOpacity
-                      style={styles.counterBtn}
-                      onPress={() =>
-                        setTempHour(prev => (prev < 12 ? prev + 1 : 1))
-                      }
-                    >
-                      <Text style={styles.counterBtnText}>+</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-
-                {/* Minute */}
-                <View style={styles.selectorCol}>
-                  <Text style={styles.subLabel}>Minute</Text>
-                  <View style={styles.counterRow}>
-                    <TouchableOpacity
-                      style={styles.counterBtn}
-                      onPress={() =>
-                        setTempMinute(prev => (prev > 0 ? prev - 1 : 59))
-                      }
-                    >
-                      <Text style={styles.counterBtnText}>-</Text>
-                    </TouchableOpacity>
-                    <Text style={styles.counterValue}>
-                      {String(tempMinute).padStart(2, '0')}
-                    </Text>
-                    <TouchableOpacity
-                      style={styles.counterBtn}
-                      onPress={() =>
-                        setTempMinute(prev => (prev < 59 ? prev + 1 : 0))
-                      }
-                    >
-                      <Text style={styles.counterBtnText}>+</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-
-                {/* AM/PM */}
-                <View style={styles.selectorCol}>
-                  <Text style={styles.subLabel}>AM/PM</Text>
-                  <TouchableOpacity
-                    style={styles.ampmBtn}
-                    onPress={() =>
-                      setTempAmPm(prev => (prev === 'AM' ? 'PM' : 'AM'))
-                    }
-                  >
-                    <Text style={styles.ampmBtnText}>{tempAmPm}</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-
-              {/* Preview */}
-              <View style={styles.previewBox}>
-                <Text style={styles.previewLabel}>Selected Preview:</Text>
-                <Text style={styles.previewValue}>
-                  {String(tempDay).padStart(2, '0')}-{MONTH_NAMES[tempMonth]}-
-                  {tempYear} {String(tempHour).padStart(2, '0')}:
-                  {String(tempMinute).padStart(2, '0')} {tempAmPm}
-                </Text>
-              </View>
-            </ScrollView>
-
-            <View style={styles.modalButtonRow}>
-              <TouchableOpacity
-                style={styles.modalCancelBtn}
-                onPress={() => setPickerModalVisible(false)}
-              >
-                <Text style={styles.modalCancelBtnText}>Cancel</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.modalConfirmBtn}
-                onPress={handleConfirmPicker}
-              >
-                <Text style={styles.modalConfirmBtnText}>Confirm</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
+      {/* Date & Time Picker */}
+      <DatePicker
+        modal
+        open={pickerModalVisible}
+        date={pickerTarget === 'start' ? startDateObj : endDateObj}
+        mode="datetime"
+        onConfirm={(date) => {
+          setPickerModalVisible(false);
+          if (pickerTarget === 'start') {
+            setStartDateObj(date);
+          } else {
+            setEndDateObj(date);
+          }
+          setErrorMessage(null);
+        }}
+        onCancel={() => {
+          setPickerModalVisible(false);
+        }}
+      />
     </ScrollView>
   );
 };
@@ -692,14 +478,15 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   activeIconLabel: {
-    fontSize: 12,
-    color: colors.mutedForeground,
-    marginBottom: 2,
+    fontSize: 14,
+    color: colors.foreground,
+    marginRight: 20,
   },
   activeIconValue: {
-    fontSize: 15,
-    fontWeight: '700',
+    fontSize: 14,
+    fontWeight: '500',
     color: colors.foreground,
+    paddingLeft: 15,
   },
   pickerSection: {
     marginBottom: 14,

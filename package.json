@@ -24,6 +24,7 @@
     "react": "19.2.3",
     "react-native": "0.87.0",
     "react-native-confetti-cannon": "^1.5.2",
+    "react-native-date-picker": "^5.0.13",
     "react-native-dynamic-app-icon": "^1.1.0",
     "react-native-mmkv": "^4.3.2",
     "react-native-nitro-modules": "^0.37.0",

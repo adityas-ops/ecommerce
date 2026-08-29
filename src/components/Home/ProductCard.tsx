@@ -170,7 +170,7 @@ const styles = StyleSheet.create({
   DiscountedPriceText: {
     color: colors.foreground,
     fontSize: 16,
-    fontWeight: '900',
+    fontWeight: '700',
     marginRight: 4,
   },
   OriginalPriceText: {
