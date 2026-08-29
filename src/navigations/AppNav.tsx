@@ -23,7 +23,7 @@ const AppNavigator = () => {
   );
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView edges={['top']} style={{ flex: 1 }}>
       <Stack.Navigator initialRouteName={isAuthenticated ? 'Tabs' : 'login'}>
         {!isAuthenticated ? (
           <>
