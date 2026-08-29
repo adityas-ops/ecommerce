@@ -14,6 +14,7 @@ import Toast from 'react-native-toast-message';
 import { handleDeepLinkUrl } from './src/utils/deepLinkHandler';
 import InvalidLinkModal from './src/components/InvalidLinkModal';
 import { useDynamicAppIcon } from './src/hooks/useDynamicAppIcon';
+import NoInternetModal from './src/components/NoInternetModal';
 
 export const navigationRef =
   createNavigationContainerRef<RootStackParamList>();
@@ -137,6 +138,7 @@ const AppContent = () => {
           }
         }}
       />
+      <NoInternetModal />
       <Toast config={toastConfig} />
     </SafeAreaProvider>
   );
