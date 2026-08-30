@@ -1,98 +1,354 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# React Native E-Commerce App
 
-# Getting Started
+### Technical Assessment — Royal Brothers
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+## 1. Project Setup
 
-## Step 1: Start Metro
+Follow these steps to run the application on your local machine:
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+### Prerequisites
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+- **Node.js**: `v22.11.0` or higher (verified in `package.json` engines)
+- **CocoaPods** (for iOS builds)
+- **Android SDK & Build Tools** (for Android builds)
 
-```sh
-# Using npm
-npm start
+### Installation
 
-# OR using Yarn
-yarn start
+1. Clone the repository and navigate to the project directory:
+   ```bash
+   cd ecommerce
+   ```
+2. Install npm dependencies:
+   ```bash
+   npm install
+   ```
+3. Install iOS CocoaPods:
+   ```bash
+   cd ios && pod install && cd ..
+   ```
+
+### Running the App
+
+- **Start the Metro Bundler**:
+  ```bash
+  npm start
+  ```
+- **Run on Android**:
+  ```bash
+  npm run android
+  ```
+  _(Runs `react-native run-android --main-activity .MainActivityDefault`)_
+- **Run on iOS**:
+  ```bash
+  npm run ios
+  ```
+
+---
+
+## 2. Folder Structure & Architecture
+
+### Folder Structure
+
+```
+ecommerce/
+├── android/
+│   └── app/src/main/java/com/ecommerce/
+│       └── DynamicAppIconModule.kt
+├── ios/
+└── src/
+    ├── api/
+    │   ├── axiosInstance.ts
+    │   └── productApi.ts
+    ├── components/
+    │   ├── Home/
+    │   │   ├── FilterBottomSheet.tsx
+    │   │   └── ProductCard.tsx
+    │   ├── cart/
+    │   │   └── CartCard.tsx
+    │   ├── productDetails/
+    │   │   ├── ProductBottomBar.tsx
+    │   │   ├── ProductDescription.tsx
+    │   │   ├── ProductHeaderImage.tsx
+    │   │   ├── ProductInfoList.tsx
+    │   │   ├── ProductPriceBox.tsx
+    │   │   ├── ProductReviews.tsx
+    │   │   ├── ProductSpecifications.tsx
+    │   │   └── ProductTitleInfo.tsx
+    │   ├── InvalidLinkModal.tsx
+    │   └── NoInternetModal.tsx
+    ├── hooks/
+    │   ├── useDebounce.ts
+    │   └── useDynamicAppIcon.ts
+    ├── navigations/
+    │   ├── AppNav.tsx
+    │   └── TabNav.tsx
+    ├── screens/
+    │   ├── tabs/
+    │   │   ├── Cart.tsx
+    │   │   ├── Home.tsx
+    │   │   └── Profile.tsx
+    │   ├── Checkout.tsx
+    │   ├── Login.tsx
+    │   └── ProductDetails.tsx
+    ├── store/
+    │   ├── slices/
+    │   │   ├── cartSlice.ts
+    │   │   ├── checkoutSlice.ts
+    │   │   ├── deepLinkSlice.ts
+    │   │   └── userSlice.ts
+    │   └── store.ts
+    ├── theme/
+    │   └── colors.ts
+    ├── types/
+    │   ├── product.ts
+    │   └── react-native-dynamic-app-icon.d.ts
+    └── utils/
+        ├── appIconManager.ts
+        ├── appIconStorage.ts
+        └── deepLinkHandler.ts
 ```
 
-## Step 2: Build and run your app
+### Architecture
 
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
+The project follows a **Layer-Based (Type-First) Architecture** — the top-level `src/` folders are organized by their **technical responsibility** (`screens/`, `components/`, `store/`, `api/`, `hooks/`, `utils/`, `types/`, `theme/`), not by individual feature folders.
 
-### Android
+- **`screens/`** — Contains all screen-level components. Each screen manages its own data fetching via direct API calls and local `useState`/`useEffect`. No ViewModel or controller layer sits in between.
+- **`components/`** — Reusable UI pieces, further grouped into subfolders by the screen they serve (`Home/`, `cart/`, `productDetails/`).
+- **`store/`** — Redux Toolkit slices handling only cross-screen shared state (cart, user, checkout, deepLink). API data is not cached in Redux — it lives in screen-local state. Persisted via MMKV for synchronous reads on cold start.
+- **`api/`** — Thin Axios wrapper and service functions. Screens import and call these directly.
+- **`utils/`** — Standalone helper modules for cross-cutting concerns (deep link parsing, app icon scheduling). Pure functions, independent of React lifecycle.
+- **`hooks/`** — Custom hooks encapsulating reusable side-effect logic (`useDynamicAppIcon`, `useDebounce`).
+- **`types/`** — Shared TypeScript interfaces and type declarations.
+- **`theme/`** — Centralized color and styling constants.
+- **`navigations/`** — Stack and Tab navigator configuration.
 
-```sh
-# Using npm
-npm run android
 
-# OR using Yarn
-yarn android
+---
+
+## 3. API Reference & Endpoints
+
+The application utilizes **DummyJSON API** (`https://dummyjson.com/`) as its mock REST backend server. Connections are handled via a custom Axios client configuration featuring request timeouts:
+
+### Configured Endpoints
+
+- **`GET /products`**
+  - *Purpose*: Fetches standard product catalogs.
+  - *Parameters*: Supports `limit` (pagination page size), `skip` (offset), `sortBy` (sort field), and `order` (`asc`/`desc`).
+- **`GET /products/{id}`**
+  - *Purpose*: Retrieves detailed attributes for a single product.
+  - *Validation Role*: Used in deep linking (`myapp://product/<id>`) to check if a product exists on the server before directing navigation.
+- **`GET /products/search`**
+  - *Purpose*: Queries products matching a text string.
+  - *Parameters*: Takes query text `q` plus pagination parameters.
+- **`GET /products/category-list`**
+  - *Purpose*: Fetches list of categories.
+  - *Validation Role*: Used in deep linking (`myapp://category/<name>`) to match the user's category parameter case-insensitively before loading.
+- **`GET /products/category/{categoryName}`**
+  - *Purpose*: Filters products by a specific category.
+
+---
+
+## 4. Tech Stack
+
+The application utilizes a curated list of modern React Native packages, selected for efficiency, performance, and native feel:
+
+| Package                             | Purpose                  | Why It Was Chosen                                                                                                                                                                                                   |
+| :---------------------------------- | :----------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **React Native (v0.87.0)**          | Core Framework           | Enables cross-platform compilation to high-performing native components on Android and iOS.                                                                                                                         |
+| **Redux Toolkit & React Redux**     | State Management         | Standardizes predictable global state across slices (`cart`, `user`, `checkout`, `deepLink`) with boilerplate-free syntax.                                                                                          |
+| **Redux Persist (v6.0.0)**          | State Persistence        | Ensures user sessions, cart items, and checkout details survive app process death.                                                                                                                                  |
+| **React Native MMKV (v4.3.2)**      | High-Performance Storage | A C++-based, synchronous key-value storage. Replaces slow asynchronous AsyncStorage to provide instantaneous reads at app launch. Serves as the storage adapter for Redux Persist and stores the App Icon schedule. |
+| **React Navigation (v7.x)**         | Routing & Navigation     | Offers seamless native-like stack and bottom-tab transitions.                                                                                                                                                       |
+| **Shopify FlashList (v2.3.2)**      | Highly-Optimized Lists   | Recycles views to provide extremely smooth 60 FPS list scrolling, crucial for product catalogs with heavy images.                                                                                                   |
+| **React Native Dynamic App Icon**   | iOS App Icon Swapping    | Native bridge wrapper to change alternate icons on iOS.                                                                                                                                                             |
+| **React Native Date Picker (v5.x)** | Native Date Picker       | Integrates platform-native date/time spinner wheels for scheduling promotions.                                                                                                                                      |
+| **Confetti Cannon (v1.5.x)**        | Visual Reward / Feedback | Delights users upon checkout success with a lightweight canvas confetti animation.                                                                                                                                  |
+| **NetInfo (v12.x)**                 | Network Listener         | Continuously monitors internet status to gracefully handle offline transitions.                                                                                                                                     |
+| **Toast Message (v2.x)**            | Micro-Interactions       | Provides clean, non-blocking toast notifications (success, warning, info) for system changes.                                                                                                                       |
+
+---
+
+## 5. E-commerce Features
+
+- **Product Catalog (`Home`)**:
+  - Live product feed optimized with `FlashList` for smooth scrolling.
+  - Category-based filtering and instant search capabilities.
+- **Product Details (`ProductDetails`)**:
+  - Rich image galleries, ratings, and detailed specifications.
+  - Automatically calculates and displays discount-adjusted pricing.
+- **Persistent Shopping Cart (`Cart`)**:
+  - Offline-persisted items.
+  - Direct quantity increment/decrement controls.
+  - Real-time calculations of tax, subtotal, and shipping adjustments.
+- **Secure Authentication (`Login` / `Profile`)**:
+  - Clean regex validation for credentials.
+  - Automatic redirect of pending deep links after successful login.
+- **Seamless Checkout (`Checkout`)**:
+  - Persistent user shipping addresses (saving fields like Phone, ZIP, and City).
+  - Validation checks on credit cards (16-digit structure, Expiry, CVV).
+  - Visual checkout reward featuring a confetti explosion and order receipt generation.
+- **Network Safety Modal (`NoInternetModal`)**:
+  - Full-screen connection block preventing network requests when offline, featuring an on-demand manual connection check.
+
+---
+
+## 6. Deep Linking
+
+The app registers and normalizes the custom URL scheme: `myapp://`.
+
+### Supported Routes
+
+- `myapp://product/<productId>` - Navigates to a specific product's details page.
+- `myapp://category/<categoryName>` - Opens the catalog pre-filtered by the given category name (case-insensitive).
+- `myapp://cart` - Opens the user's cart (requires authentication).
+- `myapp://profile` - Opens the user's profile settings page.
+
+### Protected Route Flow (`myapp://cart`)
+
+1. **Request Interception**: When a user opens `myapp://cart`, the `handleDeepLinkUrl` utility checks Redux for an authenticated email.
+2. **Pending Registration**: If unauthenticated, the destination screen name `'cart'` is saved in the Redux store (`deepLink.pendingDeepLink`).
+3. **Redirection & Alert**: The app displays an information toast ("Please log in to view your cart") and redirects the user to the `login` screen.
+4. **Resuming Navigation**: Once the login details pass validation and the user is authenticated, the `Login` screen inspects `pendingDeepLink`. If it is `'cart'`, it clears the pending state and resets the stack navigation directly to the `Cart` tab.
+
+### Invalid Deep Link Handling
+
+If a deep link is unrecognized or contains invalid parameters, the application prevents navigation failures using the following validation rules:
+
+1. **Invalid Product ID / ID Mismatch**:
+   - If the URL structure is `myapp://product/<productId>` but the parameter is non-numeric (e.g., `myapp://product/abc`), zero/negative, or the backend product API queries fail (product ID not in database), the handler catches the error.
+2. **Invalid Category / Missing Name**:
+   - If the URL is `myapp://category/<categoryName>` but the category name parameter is missing or does not match any valid category retrieved from the category catalog, the check fails.
+3. **Unrecognized Patterns**:
+   - Any URL structure that does not map to registered routes (like `myapp://random-path`) is intercepted.
+
+**Behavior on Failure**:
+
+- The handler dispatches `setInvalidDeepLink` to store the invalid link metadata (`url`, error `title`, and descriptive `message`) in the Redux store.
+- A full-screen overlay modal (**`InvalidLinkModal`**) is immediately presented to the user, displaying a detailed description of the error (e.g., _"Product #999 was not found or is no longer available"_).
+- The modal features a prominent **Go to Home** button that resets the navigation stack to the Home tab and dismisses the overlay, preventing the user from getting stuck.
+
+### How to Test Deep Linking
+
+Ensure the simulator/emulator is booted and the app is running in the background.
+
+#### Android (using ADB)
+
+```bash
+# Test Product Details navigation (valid product)
+adb shell am start -W -a android.intent.action.VIEW -d "myapp://product/1" com.ecommerce
+
+# Test Invalid Product ID (non-numeric name instead of ID)
+adb shell am start -W -a android.intent.action.VIEW -d "myapp://product/noname" com.ecommerce
+
+# Test Valid Category navigation
+adb shell am start -W -a android.intent.action.VIEW -d "myapp://category/beauty" com.ecommerce
+
+# Test Non-Existent Category
+adb shell am start -W -a android.intent.action.VIEW -d "myapp://category/nocategory" com.ecommerce
+
+# Test Protected Route Flow (will redirect to login, then cart upon authentication)
+adb shell am start -W -a android.intent.action.VIEW -d "myapp://cart" com.ecommerce
+
+# Test Unrecognized Route
+adb shell am start -W -a android.intent.action.VIEW -d "myapp://invalidroute" com.ecommerce
 ```
 
-### iOS
+#### iOS (using Simctl)
 
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
+```bash
+# Test Product Details navigation (valid product)
+xcrun simctl openurl booted "myapp://product/1"
 
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
+# Test Invalid Product ID (non-numeric name instead of ID)
+xcrun simctl openurl booted "myapp://product/noname"
 
-```sh
-bundle install
+# Test Valid Category navigation
+xcrun simctl openurl booted "myapp://category/beauty"
+
+# Test Non-Existent Category
+xcrun simctl openurl booted "myapp://category/nocategory"
+
+# Test Protected Route Flow
+xcrun simctl openurl booted "myapp://cart"
+
+# Test Unrecognized Route
+xcrun simctl openurl booted "myapp://invalidroute"
 ```
 
-Then, and every time you update your native dependencies, run:
+---
 
-```sh
-bundle exec pod install
-```
+## 7. Dynamic App Icon
 
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
+The app's most advanced utility allows marketers to schedule promotional application icons (e.g., during sales events) from the user profile screen.
 
-```sh
-# Using npm
-npm run ios
+### Approach Used
 
-# OR using Yarn
-yarn ios
-```
+- **iOS**: Uses the `react-native-dynamic-app-icon` package which maps to Apple's native `setAlternateIconName` API. The alternate icon bundle is declared directly in iOS asset catalogs and target configuration.
+- **Android**: Since Android does not provide an equivalent native API for app-icon switches, we created a custom Kotlin module: [DynamicAppIconModule.kt](./android/app/src/main/java/com/ecommerce/DynamicAppIconModule.kt).
+  - Toggles between two `<activity-alias>` elements registered inside `AndroidManifest.xml`: `.MainActivityDefault` and `.MainActivityPromotional`.
+  - Swaps states dynamically utilizing Android's native `PackageManager.setComponentEnabledSetting()`.
 
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
+### Why Scheduled = On Launch / Foreground (Not Exact Time)
 
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
+- Running exact-second timers in the background (like Android Services or iOS background agents) is highly throttled by mobile operating systems to prevent battery drainage and security exploits.
+- **Solution**: The app uses a passive **Launch and Foreground evaluation pattern**.
+- When the JS bundle loads at startup or when the application transitions from background to foreground (listening to `AppState === 'active'`), the custom `useDynamicAppIcon` hook triggers.
+- It parses the schedule boundaries in MMKV against the current system time (`new Date()`) and triggers the icon update synchronously. This avoids background thread overhead entirely.
 
-## Step 3: Modify your app
+### MMKV Persistence
 
-Now that you have successfully run the app, let's make changes!
+- The scheduled `startDate` and `endDate` boundaries are persisted as ISO-8601 strings in MMKV.
+- MMKV stores values directly in memory-mapped files via JNI, executing synchronously. When the app boots, the schedule evaluation completes _before_ the JS thread renders the main UI stack, eliminating timing delays or layout jumps.
 
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
+### Platform-Specific Limitations & Mitigations
 
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
+> [!IMPORTANT]
+> **iOS System Dialog**:
+> Apple's iOS strictly triggers a mandatory system dialog ("_You have changed the icon for..._") whenever the alternate icon changes. This cannot be suppressed.
+> _Mitigation_: The manager calls `syncCurrentIconFromNative` to verify the actual native active icon name before attempting a switch. It only triggers the change if there is a true state mismatch, preventing repetitive dialog loops.
 
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
+> [!WARNING]
+> **Android App Restart / Process Death**:
+> Enabling or disabling a launcher `activity-alias` changes Android's default target entry point. The OS launcher reacts to this by terminating the app's task stack to rebuild the process intent (app restart).
+> _Mitigation_: The Kotlin module implements a **Deferred Disable** pattern. When a change is triggered, the target activity is enabled immediately. However, the inactive activity is placed in a pending variable and is only disabled when the app transitions to the background (`onHostPause` or `onHostDestroy`), shielding the user from sudden app closures.
 
-## Congratulations! :tada:
+### How to Test Dynamic App Icons
 
-You've successfully run and modified your React Native App. :partying_face:
+1. Navigate to the **Profile** screen.
+2. Under the **Dynamic App Icon** section, tap the **"1-Min Promo Active"** button.
+   - This saves a promotional window in MMKV starting immediately and expiring in 1 minute.
+   - _iOS_: Accept the system popup.
+3. Immediately send the app to the background (go to device home screen).
+   - _Android_: This triggers `onHostPause` and safely flushes the disable flag for the inactive alias.
+4. Verify the home screen icon has updated to the **Promotional** icon.
+5. Wait **1 minute** on the home screen.
+6. Re-open the app (bringing it to the foreground).
+   - The `AppState` listener triggers the evaluation hook.
+   - The system detects the current time exceeds the end-date and schedules a reversion to the default icon.
+7. Send the app back to the background.
+8. Verify that the launcher icon has successfully reverted to the **Default** design.
 
-### Now what?
+---
 
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
+## 8. Edge Cases Handled
 
-# Troubleshooting
+- **Invalid Date Configs**:
+  - The UI prevents saving if the user sets `StartDate > EndDate`, displaying an error toast and preventing MMKV persistence.
+  - The parser guards against invalid or corrupted dates (`isNaN` boundaries) and safely falls back to the default icon state.
+- **Offline / Flaky Network**:
+  - Real-time connection updates dynamically display a blocking screen overlay.
+  - The retry button implements a loading indicator and visual toast feedback once connectivity resumes.
+- **Device Restart & Cold Starts**:
+  - Redux Persist and MMKV schedule settings survive device rebooting. The launch hook checks the schedule immediately on fresh start, applying the native icon changes before visual assets load.
+- **Timezone Travel Safety**:
+  - All date schedules are stored as UTC string formats (`toISOString()`). Comparisons use the raw system epoch timestamps, preventing icon scheduling offsets when users cross timezone lines.
 
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
+---
 
-# Learn More
+## 9. Known Limitations
 
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
-# ecommerce
+- **Custom Android Launchers (Samsung One UI, Xiaomi MIUI/HyperOS, Oppo ColorOS, etc.) Icon Cache Lag**:
+  - Toggling activity-aliases dynamically on Android forces the system launcher to update its cache. On devices running custom OS skins (such as Samsung's One UI, Xiaomi's MIUI/HyperOS, Oppo's ColorOS, etc. that implement custom home screen/app drawer caches), the launcher database does not refresh instantly. This caching latency can temporarily cause **duplicate icons** (both the default and promotional icons) to appear side-by-side in the app drawer or on the home screen.
+  - _Mitigation_: The native Kotlin module registers a defensive ghost-alias cleanup routine (`cleanGhostAliases`) inside the `onHostResume` hook. Every time the user brings the app to the foreground, the app sweeps all registered activity-aliases, cross-references them with the desired schedule, and forces any stale/unused aliases to be strictly disabled (`COMPONENT_ENABLED_STATE_DISABLED`).
+- **iOS Dialog Customization**:
+  - iOS alternate icon confirmations are managed by Apple's core system UI. It is impossible to customize, style, or hide this confirmation popup.

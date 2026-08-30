@@ -156,7 +156,7 @@ const Profile = () => {
 
     Toast.show({
       type: 'success',
-      text1: 'Schedule cleared! Reverted to Default Icon.',
+      text1: 'Reverted to Default Icon.',
     });
   };
 
@@ -211,7 +211,6 @@ const Profile = () => {
   };
 
   const statusBadge = getStatusBadgeStyle();
-
 
   return (
     <ScrollView
@@ -367,7 +366,7 @@ const Profile = () => {
         open={pickerModalVisible}
         date={pickerTarget === 'start' ? startDateObj : endDateObj}
         mode="datetime"
-        onConfirm={(date) => {
+        onConfirm={date => {
           setPickerModalVisible(false);
           if (pickerTarget === 'start') {
             setStartDateObj(date);

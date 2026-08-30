@@ -66,7 +66,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
           <View style={styles.InfoContainer}>
             <Text numberOfLines={1} style={styles.BrandText}>
-              {product.brand?.toUpperCase() || 'BRAND'}
+              {product.brand || 'Brand'}
             </Text>
             <Text style={styles.TitleText} numberOfLines={1}>
               {product.title}
@@ -147,13 +147,12 @@ const styles = StyleSheet.create({
     color: colors.mutedForeground,
     fontSize: 11,
     fontWeight: '600',
-    letterSpacing: 1.2,
     marginBottom: 2,
   },
   TitleText: {
     color: colors.foreground,
     fontSize: 14,
-    fontWeight: 'bold',
+    fontWeight: 600,
     marginBottom: 4,
     lineHeight: 18,
   },
