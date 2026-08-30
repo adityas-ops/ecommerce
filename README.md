@@ -122,7 +122,6 @@ The project follows a **Layer-Based (Type-First) Architecture** — the top-leve
 - **`theme/`** — Centralized color and styling constants.
 - **`navigations/`** — Stack and Tab navigator configuration.
 
-
 ---
 
 ## 3. API Reference & Endpoints
@@ -132,19 +131,19 @@ The application utilizes **DummyJSON API** (`https://dummyjson.com/`) as its moc
 ### Configured Endpoints
 
 - **`GET /products`**
-  - *Purpose*: Fetches standard product catalogs.
-  - *Parameters*: Supports `limit` (pagination page size), `skip` (offset), `sortBy` (sort field), and `order` (`asc`/`desc`).
+  - _Purpose_: Fetches standard product catalogs.
+  - _Parameters_: Supports `limit` (pagination page size), `skip` (offset), `sortBy` (sort field), and `order` (`asc`/`desc`).
 - **`GET /products/{id}`**
-  - *Purpose*: Retrieves detailed attributes for a single product.
-  - *Validation Role*: Used in deep linking (`myapp://product/<id>`) to check if a product exists on the server before directing navigation.
+  - _Purpose_: Retrieves detailed attributes for a single product.
+  - _Validation Role_: Used in deep linking (`myapp://product/<id>`) to check if a product exists on the server before directing navigation.
 - **`GET /products/search`**
-  - *Purpose*: Queries products matching a text string.
-  - *Parameters*: Takes query text `q` plus pagination parameters.
+  - _Purpose_: Queries products matching a text string.
+  - _Parameters_: Takes query text `q` plus pagination parameters.
 - **`GET /products/category-list`**
-  - *Purpose*: Fetches list of categories.
-  - *Validation Role*: Used in deep linking (`myapp://category/<name>`) to match the user's category parameter case-insensitively before loading.
+  - _Purpose_: Fetches list of categories.
+  - _Validation Role_: Used in deep linking (`myapp://category/<name>`) to match the user's category parameter case-insensitively before loading.
 - **`GET /products/category/{categoryName}`**
-  - *Purpose*: Filters products by a specific category.
+  - _Purpose_: Filters products by a specific category.
 
 ---
 
@@ -173,20 +172,36 @@ The application utilizes a curated list of modern React Native packages, selecte
 - **Product Catalog (`Home`)**:
   - Live product feed optimized with `FlashList` for smooth scrolling.
   - Category-based filtering and instant search capabilities.
+
+<p align="center">
+  <img src="./src/assets/screenshots/home.png" width="30%" />
+  <img src="./src/assets/screenshots/homecat.png" width="30%" />
+  <img src="./src/assets/screenshots/homesearch.png" width="30%" />
+</p>
+
 - **Product Details (`ProductDetails`)**:
   - Rich image galleries, ratings, and detailed specifications.
   - Automatically calculates and displays discount-adjusted pricing.
-- **Persistent Shopping Cart (`Cart`)**:
-  - Offline-persisted items.
-  - Direct quantity increment/decrement controls.
-  - Real-time calculations of tax, subtotal, and shipping adjustments.
+
+<p align="center">
+  <img src="./src/assets/screenshots/productDetail.png" width="30%" />
+  <img src="./src/assets/screenshots/productDetailCar.png" width="30%" />
+</p>
+
+- **Persistent Shopping Cart (`Cart`) & Seamless Checkout**:
+  - Offline-persisted cart items with quantity controls.
+  - Persistent shipping addresses, payment validation (COD / Card / UPI).
+  - Visual checkout reward featuring a confetti explosion and order receipt.
+
+<p align="center">
+  <img src="./src/assets/screenshots/cart.png" width="30%" />
+  <img src="./src/assets/screenshots/checkout.png" width="30%" />
+  <img src="./src/assets/screenshots/success.png" width="30%" />
+</p>
+
 - **Secure Authentication (`Login` / `Profile`)**:
   - Clean regex validation for credentials.
   - Automatic redirect of pending deep links after successful login.
-- **Seamless Checkout (`Checkout`)**:
-  - Persistent user shipping addresses (saving fields like Phone, ZIP, and City).
-  - Validation checks on credit cards (16-digit structure, Expiry, CVV).
-  - Visual checkout reward featuring a confetti explosion and order receipt generation.
 - **Network Safety Modal (`NoInternetModal`)**:
   - Full-screen connection block preventing network requests when offline, featuring an on-demand manual connection check.
 
@@ -275,6 +290,15 @@ xcrun simctl openurl booted "myapp://cart"
 xcrun simctl openurl booted "myapp://invalidroute"
 ```
 
+#### Deep Link Error Handling Screenshots
+
+<p align="center">
+  <img src="./src/assets/screenshots/deepActive.png" width="24%" />
+  <img src="./src/assets/screenshots/deepPro404.png" width="24%" />
+  <img src="./src/assets/screenshots/deepCat404.png" width="24%" />
+  <img src="./src/assets/screenshots/deep404.png" width="24%" />
+</p>
+
 ---
 
 ## 7. Dynamic App Icon
@@ -302,13 +326,11 @@ The app's most advanced utility allows marketers to schedule promotional applica
 
 ### Platform-Specific Limitations & Mitigations
 
-> [!IMPORTANT]
-> **iOS System Dialog**:
+> [!IMPORTANT] > **iOS System Dialog**:
 > Apple's iOS strictly triggers a mandatory system dialog ("_You have changed the icon for..._") whenever the alternate icon changes. This cannot be suppressed.
 > _Mitigation_: The manager calls `syncCurrentIconFromNative` to verify the actual native active icon name before attempting a switch. It only triggers the change if there is a true state mismatch, preventing repetitive dialog loops.
 
-> [!WARNING]
-> **Android App Restart / Process Death**:
+> [!WARNING] > **Android App Restart / Process Death**:
 > Enabling or disabling a launcher `activity-alias` changes Android's default target entry point. The OS launcher reacts to this by terminating the app's task stack to rebuild the process intent (app restart).
 > _Mitigation_: The Kotlin module implements a **Deferred Disable** pattern. When a change is triggered, the target activity is enabled immediately. However, the inactive activity is placed in a pending variable and is only disabled when the app transitions to the background (`onHostPause` or `onHostDestroy`), shielding the user from sudden app closures.
 
@@ -327,6 +349,21 @@ The app's most advanced utility allows marketers to schedule promotional applica
    - The system detects the current time exceeds the end-date and schedules a reversion to the default icon.
 7. Send the app back to the background.
 8. Verify that the launcher icon has successfully reverted to the **Default** design.
+
+#### iOS Icon Change Screenshots
+
+<p align="center">
+  <img src="./src/assets/screenshots/ios/default.png" width="30%" />
+  <img src="./src/assets/screenshots/ios/changing.png" width="30%" />
+  <img src="./src/assets/screenshots/ios/promotional.png" width="30%" />
+</p>
+
+#### Android Icon Change Screenshots
+
+<p align="center">
+  <img src="./src/assets/screenshots/android/default.jpeg" width="40%" />
+  <img src="./src/assets/screenshots/android/promotional.jpeg" width="40%" />
+</p>
 
 ---
 
