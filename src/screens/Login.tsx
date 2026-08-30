@@ -16,6 +16,7 @@ import { setUser } from '../store/slices/userSlice';
 import { clearPendingDeepLink } from '../store/slices/deepLinkSlice';
 import { RootStackParamList } from '../navigations/AppNav';
 import colors from '../theme/colors';
+import Ionicons from '@react-native-vector-icons/ionicons/static';
 
 type LoginScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -23,8 +24,9 @@ type LoginScreenNavigationProp = NativeStackNavigationProp<
 >;
 
 const Login = () => {
-  const [email, setEmailState] = useState('');
-  const [password, setPasswordState] = useState('');
+  const [email, setEmailState] = useState('example@gmail.com');
+  const [password, setPasswordState] = useState('12121212');
+  const [passwordVisible, setPasswordVisible] = useState(false);
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
 
@@ -127,20 +129,37 @@ const Login = () => {
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Password</Text>
-            <TextInput
-              style={[styles.input, passwordError ? styles.inputError : null]}
-              placeholder="Enter your password"
-              placeholderTextColor={colors.mutedForeground}
-              value={password}
-              onChangeText={text => {
-                setPasswordState(text);
-                if (passwordError) {
-                  setPasswordError('');
-                }
-              }}
-              secureTextEntry
-              autoCapitalize="none"
-            />
+            <View style={styles.passwordContainer}>
+              <TextInput
+                style={[
+                  styles.input,
+                  styles.passwordInput,
+                  passwordError ? styles.inputError : null,
+                ]}
+                placeholder="Enter your password"
+                placeholderTextColor={colors.mutedForeground}
+                value={password}
+                onChangeText={text => {
+                  setPasswordState(text);
+                  if (passwordError) {
+                    setPasswordError('');
+                  }
+                }}
+                secureTextEntry={!passwordVisible}
+                autoCapitalize="none"
+              />
+              <TouchableOpacity
+                style={styles.eyeIconButton}
+                onPress={() => setPasswordVisible(prev => !prev)}
+                activeOpacity={0.7}
+              >
+                <Ionicons
+                  name={passwordVisible ? 'eye-off-outline' : 'eye-outline'}
+                  size={20}
+                  color={colors.mutedForeground}
+                />
+              </TouchableOpacity>
+            </View>
             {passwordError ? (
               <Text style={styles.fieldErrorText}>{passwordError}</Text>
             ) : null}
@@ -216,6 +235,20 @@ const styles = StyleSheet.create({
   },
   inputError: {
     borderColor: colors.destructive,
+  },
+  passwordContainer: {
+    position: 'relative',
+    justifyContent: 'center',
+  },
+  passwordInput: {
+    paddingRight: 48,
+  },
+  eyeIconButton: {
+    position: 'absolute',
+    right: 16,
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   fieldErrorText: {
     color: colors.destructive,
