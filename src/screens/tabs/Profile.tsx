@@ -5,7 +5,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
-  Modal,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { useAppDispatch, useAppSelector } from '../../store/store';
@@ -27,6 +26,8 @@ import {
   formatDisplayDate,
   resetIconTrackingCache,
   syncCurrentIconFromNative,
+  scheduleBackgroundAlarms,
+  cancelBackgroundAlarms,
   AppIconName,
   ScheduleStatus,
 } from '../../utils/appIconManager';
@@ -130,6 +131,7 @@ const Profile = () => {
     }
 
     setAppIconSchedule(startIso, endIso);
+    scheduleBackgroundAlarms(startIso, endIso);
     const applied = evaluateAndApplyAppIcon(true);
     setActiveIcon(applied);
     setScheduleStatus(getScheduleStatus(startIso, endIso));
@@ -146,6 +148,7 @@ const Profile = () => {
 
   const handleClearSchedule = () => {
     clearAppIconSchedule();
+    cancelBackgroundAlarms();
     setErrorMessage(null);
     resetIconTrackingCache();
     const applied = evaluateAndApplyAppIcon(true);
@@ -171,6 +174,7 @@ const Profile = () => {
     const endIso = oneMinLater.toISOString();
 
     setAppIconSchedule(startIso, endIso);
+    scheduleBackgroundAlarms(startIso, endIso);
     const applied = evaluateAndApplyAppIcon(true);
     setActiveIcon(applied);
     setScheduleStatus(getScheduleStatus(startIso, endIso));

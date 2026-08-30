@@ -154,6 +154,69 @@ export const syncCurrentIconFromNative = (): Promise<AppIconName> => {
 syncCurrentIconFromNative();
 
 /**
+ * Schedules exact native background alarms on Android so the icon switches
+ * at the exact scheduled moment even if the app is closed or minimized.
+ *
+ * @param startDateIso ISO 8601 start date string (parsed to UTC epoch ms)
+ * @param endDateIso ISO 8601 end date string (parsed to UTC epoch ms)
+ */
+export const scheduleBackgroundAlarms = (
+  startDateIso: string | null,
+  endDateIso: string | null
+): void => {
+  if (Platform.OS !== 'android') {
+    return;
+  }
+  if (!startDateIso || !endDateIso) {
+    cancelBackgroundAlarms();
+    return;
+  }
+
+  const startMs = Date.parse(startDateIso);
+  const endMs = Date.parse(endDateIso);
+
+  if (isNaN(startMs) || isNaN(endMs) || startMs > endMs) {
+    return;
+  }
+
+  try {
+    const { RNDynamicAppIcon } = NativeModules;
+    if (
+      RNDynamicAppIcon &&
+      typeof RNDynamicAppIcon.scheduleIconAlarms === 'function'
+    ) {
+      RNDynamicAppIcon.scheduleIconAlarms(startMs, endMs);
+      console.log(
+        `[AppIcon] Scheduled background alarms for startMs=${startMs}, endMs=${endMs}`
+      );
+    }
+  } catch (error) {
+    console.error('[AppIcon] Failed to schedule background alarms:', error);
+  }
+};
+
+/**
+ * Cancels pending native background alarms on Android.
+ */
+export const cancelBackgroundAlarms = (): void => {
+  if (Platform.OS !== 'android') {
+    return;
+  }
+  try {
+    const { RNDynamicAppIcon } = NativeModules;
+    if (
+      RNDynamicAppIcon &&
+      typeof RNDynamicAppIcon.cancelIconAlarms === 'function'
+    ) {
+      RNDynamicAppIcon.cancelIconAlarms();
+      console.log('[AppIcon] Cancelled native background alarms');
+    }
+  } catch (error) {
+    console.error('[AppIcon] Failed to cancel background alarms:', error);
+  }
+};
+
+/**
  * Reads MMKV schedule, evaluates current target icon, and applies it if needed.
  *
  * @param force - Pass true when the user explicitly triggers a change (Save/Clear/Preset)

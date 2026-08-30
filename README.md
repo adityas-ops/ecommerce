@@ -53,7 +53,14 @@ Follow these steps to run the application on your local machine:
 ecommerce/
 ├── android/
 │   └── app/src/main/java/com/ecommerce/
-│       └── DynamicAppIconModule.kt
+│       ├── AppIconAlarmReceiver.kt
+│       ├── AppIconAlarmScheduler.kt
+│       ├── AppIconHelper.kt
+│       ├── BootReceiver.kt
+│       ├── DynamicAppIconModule.kt
+│       ├── DynamicAppIconPackage.kt
+│       ├── MainActivity.kt
+│       └── MainApplication.kt
 ├── ios/
 └── src/
     ├── api/
@@ -307,48 +314,61 @@ The app's most advanced utility allows marketers to schedule promotional applica
 
 ### Approach Used
 
-- **iOS**: Uses the `react-native-dynamic-app-icon` package which maps to Apple's native `setAlternateIconName` API. The alternate icon bundle is declared directly in iOS asset catalogs and target configuration.
-- **Android**: Since Android does not provide an equivalent native API for app-icon switches, we created a custom Kotlin module: [DynamicAppIconModule.kt](./android/app/src/main/java/com/ecommerce/DynamicAppIconModule.kt).
+- **iOS**: Uses the `react-native-dynamic-app-icon` package which maps to Apple's native `setAlternateIconName` API. The alternate icon bundle is declared directly in iOS asset catalogs and target configuration. Evaluated when the app launches or returns to the foreground (Apple strictly restricts changing alternate icons without active user session / confirmation popup).
+- **Android**: Custom native Kotlin architecture consisting of:
+  - [AppIconHelper.kt](./android/app/src/main/java/com/ecommerce/AppIconHelper.kt) — Centralized icon switcher that applies atomic component state changes on Android 13+ (API 33+) via `PackageManager.setComponentEnabledSettings()`.
+  - [AppIconAlarmScheduler.kt](./android/app/src/main/java/com/ecommerce/AppIconAlarmScheduler.kt) — Schedules exact alarms via Android's `AlarmManager` (`setExactAndAllowWhileIdle`) and mirrors schedules in native `SharedPreferences`.
+  - [AppIconAlarmReceiver.kt](./android/app/src/main/java/com/ecommerce/AppIconAlarmReceiver.kt) — `BroadcastReceiver` that Android wakes up at the exact scheduled second, even when the app is completely closed or killed, switching the launcher alias in native code without waking the React Native JS runtime.
+  - [BootReceiver.kt](./android/app/src/main/java/com/ecommerce/BootReceiver.kt) — Automatically restores pending exact alarms and verifies the active icon following a device reboot or application update.
+  - [DynamicAppIconModule.kt](./android/app/src/main/java/com/ecommerce/DynamicAppIconModule.kt) — React Native bridge exposing `scheduleIconAlarms`, `cancelIconAlarms`, and `getIconName`.
   - Toggles between two `<activity-alias>` elements registered inside `AndroidManifest.xml`: `.MainActivityDefault` and `.MainActivityPromotional`.
-  - Swaps states dynamically utilizing Android's native `PackageManager.setComponentEnabledSetting()`.
 
-### Why Scheduled = On Launch / Foreground (Not Exact Time)
+### Background Switching (App Closed / Minimized)
 
-- Running exact-second timers in the background (like Android Services or iOS background agents) is highly throttled by mobile operating systems to prevent battery drainage and security exploits.
-- **Solution**: The app uses a passive **Launch and Foreground evaluation pattern**.
-- When the JS bundle loads at startup or when the application transitions from background to foreground (listening to `AppState === 'active'`), the custom `useDynamicAppIcon` hook triggers.
-- It parses the schedule boundaries in MMKV against the current system time (`new Date()`) and triggers the icon update synchronously. This avoids background thread overhead entirely.
+- **Closed & Killed State Support**: Unlike pure JavaScript timers which die when the app process is terminated, Android's `AlarmManager` wakes up `AppIconAlarmReceiver` at the exact start and end timestamps.
+- **Battery-Friendly**: Operates with zero persistent background services or battery-draining polling tasks. The receiver executes in under 5 milliseconds and releases execution immediately.
+- **Reboot Resilience**: Alarms survive phone reboots via `BootReceiver` (`BOOT_COMPLETED`), which reads the persistent schedule from `SharedPreferences` and re-registers the exact alarms.
 
-### MMKV Persistence
+### Samsung One UI Duplicate Icon Mitigation
 
-- The scheduled `startDate` and `endDate` boundaries are persisted as ISO-8601 strings in MMKV.
-- MMKV stores values directly in memory-mapped files via JNI, executing synchronously. When the app boots, the schedule evaluation completes _before_ the JS thread renders the main UI stack, eliminating timing delays or layout jumps.
+- **The Problem**: On Samsung devices (One UI Home launcher), when one activity-alias is enabled while another remains enabled even briefly, the launcher indexes both as distinct entry points, placing a duplicate/clone icon on the home screen.
+- **The Solution**:
+  - **Android 13+ (API 33+)**: We use Android's atomic `PackageManager.setComponentEnabledSettings(listOf(disableSetting, enableSetting))` in [AppIconHelper.kt](./android/app/src/main/java/com/ecommerce/AppIconHelper.kt). The old alias is disabled and the new alias is enabled in a single system transaction. Samsung's launcher receives only one package update event and never sees two enabled launcher icons simultaneously.
+  - **Legacy Android (< 33)**: Disables the old alias first before enabling the new alias with `PackageManager.DONT_KILL_APP`.
+  - **Defensive Sweeper**: The `cleanGhostAliases` routine checks if multiple aliases ever get marked active concurrently and aggressively forces the inactive alias to `COMPONENT_ENABLED_STATE_DISABLED`.
+
+### MMKV & Native SharedPreferences Persistence
+
+- The scheduled `startDate` and `endDate` boundaries are persisted as ISO-8601 strings in MMKV on the JavaScript side and mirrored in native `SharedPreferences` on Android.
+- When the JS bundle loads or when the app returns to the foreground (`AppState === 'active'`), `useDynamicAppIcon` verifies synchronization between MMKV, the active OS alias, and background alarms.
 
 ### Platform-Specific Limitations & Mitigations
 
-> [!IMPORTANT] > **iOS System Dialog**:
-> Apple's iOS strictly triggers a mandatory system dialog ("_You have changed the icon for..._") whenever the alternate icon changes. This cannot be suppressed.
-> _Mitigation_: The manager calls `syncCurrentIconFromNative` to verify the actual native active icon name before attempting a switch. It only triggers the change if there is a true state mismatch, preventing repetitive dialog loops.
+> [!IMPORTANT]
+> **iOS System Dialog & Background Policy**:
+> Apple's iOS strictly triggers a mandatory system dialog ("_You have changed the icon for..._") whenever the alternate icon changes, and does not support headless background icon switching without user interaction.
+> _Mitigation_: On iOS, the manager uses the Launch & Foreground evaluation pattern and verifies `syncCurrentIconFromNative` to ensure the dialog only displays if there is a genuine state mismatch.
 
-> [!WARNING] > **Android App Restart / Process Death**:
-> Enabling or disabling a launcher `activity-alias` changes Android's default target entry point. The OS launcher reacts to this by terminating the app's task stack to rebuild the process intent (app restart).
-> _Mitigation_: The Kotlin module implements a **Deferred Disable** pattern. When a change is triggered, the target activity is enabled immediately. However, the inactive activity is placed in a pending variable and is only disabled when the app transitions to the background (`onHostPause` or `onHostDestroy`), shielding the user from sudden app closures.
+> [!NOTE]
+> **Android Exact Alarm Permission**:
+> On Android 12+ (API 31+), `SCHEDULE_EXACT_ALARM` permission is declared in `AndroidManifest.xml` to allow `AlarmManager.setExactAndAllowWhileIdle()` to trigger exact-second icon transitions.
 
 ### How to Test Dynamic App Icons
 
 1. Navigate to the **Profile** screen.
-2. Under the **Dynamic App Icon** section, tap the **"1-Min Promo Active"** button.
-   - This saves a promotional window in MMKV starting immediately and expiring in 1 minute.
+2. Under the **Dynamic App Icon** section, tap the **"Test 1-Minute Promo (Starts Now)"** button (or pick custom dates via the date picker and tap **Save Schedule**).
+   - This sets a promotional window starting immediately and expiring in 1 minute.
+   - On Android, native exact alarms are scheduled via `AlarmManager`.
    - _iOS_: Accept the system popup.
-3. Immediately send the app to the background (go to device home screen).
-   - _Android_: This triggers `onHostPause` and safely flushes the disable flag for the inactive alias.
-4. Verify the home screen icon has updated to the **Promotional** icon.
-5. Wait **1 minute** on the home screen.
-6. Re-open the app (bringing it to the foreground).
-   - The `AppState` listener triggers the evaluation hook.
-   - The system detects the current time exceeds the end-date and schedules a reversion to the default icon.
-7. Send the app back to the background.
-8. Verify that the launcher icon has successfully reverted to the **Default** design.
+3. **Test with App Closed (Android)**:
+   - Go to your home screen.
+   - Open **Recent Apps** and **swipe away / kill the app completely**.
+   - Notice the icon is now the **Promotional** icon.
+   - Wait **1 minute** on the home screen without opening the app.
+   - Watch the home screen or app drawer: the icon will switch back to the **Default** icon automatically in the background.
+4. **Samsung Duplicate Test**:
+   - Switch back and forth between Default and Promotional icons.
+   - Verify that Samsung One UI updates the existing icon tile in place without creating a duplicate/clone icon.
 
 #### iOS Icon Change Screenshots
 
@@ -376,16 +396,18 @@ The app's most advanced utility allows marketers to schedule promotional applica
   - Real-time connection updates dynamically display a blocking screen overlay.
   - The retry button implements a loading indicator and visual toast feedback once connectivity resumes.
 - **Device Restart & Cold Starts**:
-  - Redux Persist and MMKV schedule settings survive device rebooting. The launch hook checks the schedule immediately on fresh start, applying the native icon changes before visual assets load.
-- **Timezone Travel Safety**:
-  - All date schedules are stored as UTC string formats (`toISOString()`). Comparisons use the raw system epoch timestamps, preventing icon scheduling offsets when users cross timezone lines.
+  - `BootReceiver` catches `ACTION_BOOT_COMPLETED` and `ACTION_MY_PACKAGE_REPLACED` to immediately re-register `AlarmManager` alarms and reconcile the icon state even if the phone was powered off when the schedule expired.
+- **Timezone Safety**:
+  - All date schedules are stored as ISO-8601 UTC string formats (`toISOString()`). 
+  - Comparisons and alarms utilize raw UTC epoch milliseconds (`Date.parse()`, `System.currentTimeMillis()`, and `AlarmManager.RTC_WAKEUP`), ensuring icon switches occur at the exact same physical moment worldwide regardless of device timezone changes.
+  - Display formatting (`formatDisplayDate`) converts UTC timestamps to the user's current local device time for intuitive UI feedback.
 
 ---
 
 ## 9. Known Limitations
 
-- **Custom Android Launchers (Samsung One UI, Xiaomi MIUI/HyperOS, Oppo ColorOS, etc.) Icon Cache Lag**:
-  - Toggling activity-aliases dynamically on Android forces the system launcher to update its cache. On devices running custom OS skins (such as Samsung's One UI, Xiaomi's MIUI/HyperOS, Oppo's ColorOS, etc. that implement custom home screen/app drawer caches), the launcher database does not refresh instantly. This caching latency can temporarily cause **duplicate icons** (both the default and promotional icons) to appear side-by-side in the app drawer or on the home screen.
-  - _Mitigation_: The native Kotlin module registers a defensive ghost-alias cleanup routine (`cleanGhostAliases`) inside the `onHostResume` hook. Every time the user brings the app to the foreground, the app sweeps all registered activity-aliases, cross-references them with the desired schedule, and forces any stale/unused aliases to be strictly disabled (`COMPONENT_ENABLED_STATE_DISABLED`).
+- **Custom Android Launchers Icon Cache Refresh**:
+  - While our atomic batch update (`setComponentEnabledSettings`) solves duplicate icon creation on Samsung One UI, some aggressive third-party launchers (like certain budget MIUI/ColorOS builds) may take a few seconds to refresh their icon cache from disk.
+  - _Mitigation_: The native Kotlin module runs `cleanGhostAliases` on resume and uses atomic component state updates to prevent duplicate launcher records.
 - **iOS Dialog Customization**:
   - iOS alternate icon confirmations are managed by Apple's core system UI. It is impossible to customize, style, or hide this confirmation popup.
