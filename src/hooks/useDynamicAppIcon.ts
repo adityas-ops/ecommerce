@@ -32,8 +32,15 @@ export const useDynamicAppIcon = () => {
       }
     );
 
+    // 3. Global periodic evaluation timer (runs every 1s at root level across all screens/tabs)
+    // Ensures immediate real-time icon evaluation when schedule boundaries cross (e.g. 1-minute promo start/end)
+    const timer = setInterval(() => {
+      evaluateAndApplyAppIcon();
+    }, 1000);
+
     return () => {
       subscription.remove();
+      clearInterval(timer);
     };
   }, []);
 };

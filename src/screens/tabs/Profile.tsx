@@ -11,7 +11,7 @@ import { useAppDispatch, useAppSelector } from '../../store/store';
 import { clearUser } from '../../store/slices/userSlice';
 import { clearCart } from '../../store/slices/cartSlice';
 import { clearCheckoutDetails } from '../../store/slices/checkoutSlice';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useIsFocused } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigations/AppNav';
 import colors from '../../theme/colors';
@@ -73,8 +73,12 @@ const Profile = () => {
     setSavedEndDisplay(formatDisplayDate(schedule.endDate));
   }, []);
 
+  const isFocused = useIsFocused();
+
   useEffect(() => {
-    // Initial mount: query actual OS icon first, then evaluate schedule
+    if (!isFocused) return;
+
+    // Initial focus: query actual OS icon first, then evaluate schedule
     syncCurrentIconFromNative().finally(() => {
       const schedule = getAppIconSchedule();
       const icon = evaluateAndApplyAppIcon();
@@ -100,12 +104,12 @@ const Profile = () => {
       }
     });
 
-    // Auto-refresh status every 3 seconds to react smoothly when 1-minute promo expires
+    // Auto-refresh status every 3 seconds ONLY while Profile tab is focused
     const timer = setInterval(() => {
       refreshUI();
     }, 3000);
     return () => clearInterval(timer);
-  }, [refreshUI]);
+  }, [refreshUI, isFocused]);
 
   const openDateTimePicker = (target: 'start' | 'end') => {
     setPickerTarget(target);

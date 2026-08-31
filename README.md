@@ -406,8 +406,9 @@ The app's most advanced utility allows marketers to schedule promotional applica
 
 ## 9. Known Limitations
 
-- **Custom Android Launchers Icon Cache Refresh**:
-  - While our atomic batch update (`setComponentEnabledSettings`) solves duplicate icon creation on Samsung One UI, some aggressive third-party launchers (like certain budget MIUI/ColorOS builds) may take a few seconds to refresh their icon cache from disk.
-  - _Mitigation_: The native Kotlin module runs `cleanGhostAliases` on resume and uses atomic component state updates to prevent duplicate launcher records.
+- **Custom Android Launchers Icon Cache & Latency (10–15s Delay)**:
+  - When `PackageManager.setComponentEnabledSettings` or `AlarmManager` toggles the active `<activity-alias>` in native code, the Android operating system component state updates immediately. However, custom OEM home launchers (such as Samsung One UI, Xiaomi MIUI/HyperOS, Oppo ColorOS, Pixel Launcher, etc.) maintain an internal SQLite image bitmap cache for home screen shortcuts.
+  - Depending on system load, launcher indexing background threads, or OS power-saving modes, the home launcher UI may take **10 to 15 seconds** (or until the home screen is swiped/refreshed) to read the new icon image resource from the APK and re-render it on the home screen.
+  - _Native Optimization_: We utilize `AlarmManager.setAlarmClock()` to bypass Android Doze mode throttling for exact-second native execution, and run a 1-second JS boundary evaluation hook in `useDynamicAppIcon` for instant in-app state updates.
 - **iOS Dialog Customization**:
   - iOS alternate icon confirmations are managed by Apple's core system UI. It is impossible to customize, style, or hide this confirmation popup.

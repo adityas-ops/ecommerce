@@ -25,33 +25,16 @@ const AppNavigator = () => {
   return (
     <SafeAreaView edges={['top']} style={{ flex: 1 }}>
       <Stack.Navigator initialRouteName={isAuthenticated ? 'Tabs' : 'login'}>
-        {!isAuthenticated ? (
-          <>
-            <Stack.Screen
-              name="login"
-              component={Login}
-              options={{ headerShown: false }}
-            />
-            <Stack.Screen
-              name="Tabs"
-              component={TabNav}
-              options={{ headerShown: false }}
-            />
-          </>
-        ) : (
-          <>
-            <Stack.Screen
-              name="Tabs"
-              component={TabNav}
-              options={{ headerShown: false }}
-            />
-            <Stack.Screen
-              name="login"
-              component={Login}
-              options={{ headerShown: false }}
-            />
-          </>
-        )}
+        <Stack.Screen
+          name="Tabs"
+          component={TabNav}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="login"
+          component={Login}
+          options={{ headerShown: false }}
+        />
         <Stack.Screen
           name="productDetail"
           component={ProductDetails}
