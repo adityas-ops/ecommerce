@@ -118,18 +118,20 @@ object AppIconAlarmScheduler {
 
     private fun scheduleExact(alarmManager: AlarmManager, triggerAtMs: Long, pendingIntent: PendingIntent) {
         try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                if (alarmManager.canScheduleExactAlarms()) {
-                    alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMs, pendingIntent)
-                } else {
-                    alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMs, pendingIntent)
-                }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) {
+                alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMs, pendingIntent)
             } else {
-                alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMs, pendingIntent)
+                // setAlarmClock guarantees exact-second wake up bypassing Android Doze mode throttling
+                val alarmClockInfo = AlarmManager.AlarmClockInfo(triggerAtMs, pendingIntent)
+                alarmManager.setAlarmClock(alarmClockInfo, pendingIntent)
             }
         } catch (e: SecurityException) {
-            Log.w(TAG, "SecurityException while scheduling exact alarm, falling back to setAndAllowWhileIdle", e)
-            alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMs, pendingIntent)
+            Log.w(TAG, "SecurityException while scheduling setAlarmClock, falling back to setExactAndAllowWhileIdle", e)
+            try {
+                alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMs, pendingIntent)
+            } catch (ex: Exception) {
+                alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMs, pendingIntent)
+            }
         } catch (e: Exception) {
             Log.e(TAG, "Failed to schedule alarm at $triggerAtMs", e)
         }
